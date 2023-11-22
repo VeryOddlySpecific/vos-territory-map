@@ -1,0 +1,93 @@
+<?php
+
+class AFCT_Settings {
+
+    public function register_settings() {
+
+        register_setting( 'afct_settings', '_afct_active_states' );
+        register_setting( 'afct_settings', '_aftc_active_counties' );
+
+    }
+
+    public function save_settings() {
+
+        $counties = $_POST['_afct_active_counties'];
+        $states = $_POST['_afct_active_states'];
+
+        update_option( '_afct_active_counties', $counties );
+        update_option( '_afct_active_states', $states );
+
+        wp_redirect( admin_url( 'admin.php?page=afc-territory-map' ) );
+        exit;
+
+    }
+
+    public function get_settings() {
+
+        $settings = array(
+            'states' => get_option( '_afct_active_states' ),
+            'counties' => get_option( '_afct_active_counties' )
+        );
+
+        return $settings;
+
+    }
+
+    public function add_settings_sections() {
+
+        add_settings_section(
+            'afct_settings',
+            'Territory Settings',
+            array( $this, 'add_settings_fields' ),
+            'afc-territory-map'
+        );
+
+    }
+
+    public function add_settings_fields() {
+
+        add_settings_field(
+            'afct_territory_selection',
+            'Territory Selection',
+            array( $this, 'render_territory_selection' ),
+            'afc-territory-map',
+            'afct_settings'
+        );
+
+    }
+
+    public function render_territory_selection() {
+
+        $territory_container = '<div id="afc-territory-map"></div>';
+
+        echo $territory_container;
+        
+    }
+
+    public function render_settings_page() {
+
+        $form = '<form method="post" id="afc-territory-settings" action="' . admin_url( 'admin-post.php' ) . '">';
+        $form .= wp_nonce_field( 'afct_settings', 'afct_settings_nonce', true, false );
+        do_settings_sections( 'afc-territory-map' );
+        submit_button( 'Save Settings' );
+        $form .= '</form>';
+
+        echo $form;
+
+    }
+
+    public function add_settings_page() {
+
+        add_menu_page(
+            'AFC Territory Map',
+            'Territory Map',
+            'manage_options',
+            'afc-territory-map',
+            array( $this, 'render_settings_page' ),
+            'dashicons-location-alt',
+            6
+        );
+
+    }
+
+}

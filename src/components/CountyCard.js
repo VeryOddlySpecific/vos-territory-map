@@ -10,7 +10,7 @@ import {
 
 import { useState } from '@wordpress/element';
 
-import branches from '../includes/admin/branches.json';
+import branches from '../assets/branches.json';
 
 export default function CountyCard({ countySelection, updateCountySelection }) {
 

@@ -25,7 +25,7 @@
     {
         "type": "script",
         "handle": "afc-territory-js",
-        "src": "build/afc-territory.js",
+        "src": "/build/admin.js",
         "deps": [
             "wp-components",
             "wp-element",

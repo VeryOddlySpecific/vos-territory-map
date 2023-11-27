@@ -16,16 +16,16 @@ import {
  * Internal dependencies
  */
 import StateSelector from './StateSelector';
-import CountyCard from './CountyCard-new';
+import CountyCard from './CountyCard';
 
 export default function TerritoryMap() {
 
     const mapRef = useRef();
     // state layers
-    const [states, setStates] = useState(admin.states);
+    const [states, setStates] = useState(admin.states !== '' ? admin.states : []);
     const [stateLayers, setStateLayers] = useState(L.layerGroup());
     // county layers
-    const [counties, setCounties] = useState(admin.counties);
+    const [counties, setCounties] = useState(admin.counties !== '' ? admin.counties : []);
     const [countyLayers, setCountyLayers] = useState(L.layerGroup());
     // county selection
     const [countySelection, setCountySelection] = useState([]);
@@ -97,8 +97,14 @@ export default function TerritoryMap() {
 
             statesToAdd.forEach((state) => {
 
+                const stateJson = admin.apiBaseUrl + 'state/' + state + '.json';
+
+                // fetch api response from stateJson
+
+                console.log("stateJson", stateJson);
+
                 const stateLayer = L.geoJSON(
-                    state,
+                    stateJson,
                     {
                         style: {
                             color: '#0a1944',
@@ -184,7 +190,7 @@ export default function TerritoryMap() {
     useEffect(() => {
 
         mapRef.current = L.map(
-            'territory-map',
+            'afc-territory-map',
             {
                 center: [39.8283, -98.5795],
                 zoom: 4,
@@ -203,7 +209,9 @@ export default function TerritoryMap() {
 
         if (states) {
 
-            const stateFips = states.map((state) => state.properties.STATE);
+            console.log("states", states);
+
+            const stateFips = states.map((state) => state.fips);
 
             const stateLayersFips = stateLayers.getLayers().map((layer) => layer.feature.properties.STATE);
 

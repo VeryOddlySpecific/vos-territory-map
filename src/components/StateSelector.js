@@ -6,7 +6,7 @@ import {
     __experimentalHeading as Heading
 } from '@wordpress/components';
 
-import fips from '../includes/admin/fips.json';
+import fips from '../assets/fips.json';
 
 export default function StateSelector({ states, updateStates }) {
 

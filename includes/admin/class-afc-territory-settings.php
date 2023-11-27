@@ -58,7 +58,9 @@ class AFCT_Settings {
 
     public function render_territory_selection() {
 
-        $territory_container = '<div id="afc-territory-map"></div>';
+        $territory_container = '<div id="state-selector"></div>';
+        $territory_container .= '<div id="county-card"></div>';
+        $territory_container .= '<div id="afc-territory-map" style="height:600px;"></div>';
 
         echo $territory_container;
         
@@ -67,7 +69,8 @@ class AFCT_Settings {
     public function render_settings_page() {
 
         $form = '<form method="post" id="afc-territory-settings" action="' . admin_url( 'admin-post.php' ) . '">';
-        $form .= wp_nonce_field( 'afct_settings', 'afct_settings_nonce', true, false );
+        // <input type="hidden" id="action" name="action" value="save_afct_settings" />
+        $form .= wp_nonce_field( 'save_afct_settings', 'action', true, false );
         do_settings_sections( 'afc-territory-map' );
         submit_button( 'Save Settings' );
         $form .= '</form>';
@@ -87,6 +90,36 @@ class AFCT_Settings {
             'dashicons-location-alt',
             6
         );
+
+    }
+
+    public function register_rest_routes() {
+
+        register_rest_route(
+            'afct/v1',
+            '/state/(?P<id>\d+)',
+            array(
+                'methods' => 'GET',
+                'callback' => array( $this, 'rest_get_state' )
+            )
+        );
+
+    }
+
+    public function rest_get_state( $fips ) {
+
+        $state = $fips['id'];
+
+        $state_json = json_decode( file_get_contents( AFCT_PATH . 'includes/assets/states/' . $state . '.geojson' ) );
+
+        return rest_ensure_response( $state_json );
+
+    }
+
+    public function register() {
+
+        $this->register_settings();
+        $this->add_settings_sections();
 
     }
 

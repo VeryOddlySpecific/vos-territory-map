@@ -5,11 +5,7 @@ module.exports = {
     ...defaultConfig,
     entry: {
         'admin': './src/admin.js',
-        'public': './src/public.js',
-        'countyCard': './src/countyCard.js',
-        'again': './src/again.js',
-        'admin-alt': './src/admin-alt.js',
-        'main': './src/main.js',
+        'public': './src/public.js'
     },
     output: {
         path: path.join(__dirname, '/build'),

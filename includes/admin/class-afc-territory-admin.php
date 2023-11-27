@@ -28,12 +28,16 @@ class AFCT_Admin {
 
     public function run() {
 
-        add_action('admin_init', array( $this->settings, 'register_settings' ) );
-        add_action('admin_init', array( $this->settings, 'add_settings_sections' ) );
+        add_action('admin_init', array( $this->settings, 'register' ) );
 
         add_action('admin_menu', array( $this->settings, 'add_settings_page' ) );
 
         add_action('admin_enqueue_scripts', array( $this->display, 'enqueue_styles_scripts' ) );
+
+        add_action('admin_post_save_afct_settings', array( $this->settings, 'save_settings' ) );
+
+        add_action('res_api_init', array( $this->settings, 'register_rest_routes' ) );
+
     }
 
 }

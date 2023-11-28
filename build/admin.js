@@ -19,6 +19,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _assets_branches_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../assets/branches.json */ "./src/assets/branches.json");
+/* harmony import */ var _assets_fips_json__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../assets/fips.json */ "./src/assets/fips.json");
+
 
 
 
@@ -44,13 +46,13 @@ function CountyCard({
   };
   const [active, setActive] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(countiesAreActive(countySelection));
   const [branch, setBranch] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(getCountiesBranch(countySelection));
-  const handleToggleChange = () => {
-    setActive(prevActive => !prevActive);
+  const handleToggleChange = isActive => {
+    setActive(isActive);
     updateCountySelection(prevCountySelection => {
       return prevCountySelection.map(county => {
         return {
           ...county,
-          active: !prevActive
+          active: isActive
         };
       });
     });
@@ -67,9 +69,9 @@ function CountyCard({
     });
   };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Card, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.CardHeader, null, countySelection.length ? countySelection.map(county => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalHeading, {
-    key: county.fips,
+    key: county.properties.GEOID,
     level: 2
-  }, county.name)) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalHeading, {
+  }, county.properties.Name, " County")) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalHeading, {
     level: 2
   }, "Select A County")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.CardBody, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
     label: "Activate County",
@@ -144,6 +146,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _StateSelector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./StateSelector */ "./src/components/StateSelector.js");
 /* harmony import */ var _CountyCard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./CountyCard */ "./src/components/CountyCard.js");
+/* harmony import */ var _assets_fips_json__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../assets/fips.json */ "./src/assets/fips.json");
+/* harmony import */ var _assets_branches_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../assets/branches.json */ "./src/assets/branches.json");
 
 /**
  * External dependencies
@@ -160,16 +164,23 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 
+
+
 function TerritoryMap() {
   const mapRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useRef)();
+
   // state layers
   const [states, setStates] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(admin.states !== '' ? admin.states : []);
   const [stateLayers, setStateLayers] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(L.layerGroup());
+
   // county layers
   const [counties, setCounties] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(admin.counties !== '' ? admin.counties : []);
   const [countyLayers, setCountyLayers] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(L.layerGroup());
+
   // county selection
   const [countySelection, setCountySelection] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+  const [selectedCounty, setSelectedCounty] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({});
+
   // root elements
   const stateSelectorRoot = (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createRoot)(document.getElementById('state-selector'));
   const countyCardRoot = (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createRoot)(document.getElementById('county-card'));
@@ -207,35 +218,68 @@ function TerritoryMap() {
       countyLayers.addTo(mapRef.current);
     }
   };
-  const addStates = statesToAdd => {
-    if (statesToAdd.length) {
-      statesToAdd.forEach(state => {
-        const stateJson = admin.apiBaseUrl + 'state/' + state + '.json';
-
-        // fetch api response from stateJson
-
-        console.log("stateJson", stateJson);
-        const stateLayer = L.geoJSON(stateJson, {
-          style: {
+  const addSingleState = stateToAdd => {
+    const stateApi = admin.apiBase + '/state/' + stateToAdd;
+    fetch(stateApi).then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    }).then(stateJson => {
+      var stateData = turf.combine(stateJson);
+      var stateShape = turf.convex(stateData, {
+        concavity: 1
+      });
+      const stateLayer = L.geoJSON(stateShape, {
+        style: {
+          color: '#0a1944',
+          weight: 2,
+          opacity: 1,
+          fillColor: 'transparent',
+          fillOpacity: 0
+        },
+        fips: stateToAdd
+      });
+      const stateCounties = L.geoJSON(stateJson, {
+        onEachFeature: (feature, layer) => {
+          layer.setStyle({
             color: '#0a1944',
             weight: 1,
-            opacity: 1,
+            opacity: .5,
             fillColor: 'transparent',
             fillOpacity: 0
-          }
-        });
-        setStateLayers(prevStateLayers => prevStateLayers.addLayer(stateLayer));
+          });
+          const stateName = _assets_fips_json__WEBPACK_IMPORTED_MODULE_5__.filter(state => state.fips === feature.properties.STATEFP)[0].name;
+          layer.bindTooltip(feature.properties.Name + ' County, ' + stateName, {
+            interactive: true
+          });
+          layer.on('click', e => {
+            setSelectedCounty(feature);
+          });
+        },
+        state: stateToAdd
       });
-      stateLayers.addTo(mapRef.current);
-    }
+      setStateLayers(prevStateLayers => prevStateLayers.addLayer(stateLayer));
+      setCountyLayers(prevCountyLayers => prevCountyLayers.addLayer(stateCounties));
+    }).catch(error => {
+      console.error('There has been a problem with your fetch operation:', error);
+    });
+    stateLayers.addTo(mapRef.current);
+    countyLayers.addTo(mapRef.current);
   };
-  const removeStates = statesToRemove => {
-    if (statesToRemove.length) {
-      statesToRemove.forEach(state => {
-        const stateLayer = stateLayers.getLayers().filter(layer => layer.feature.properties.STATE === state)[0];
-        stateLayers.removeLayer(stateLayer);
-      });
-    }
+  const removeSingleState = stateToRemove => {
+    console.log("stateToRemove", stateToRemove);
+    console.log("countyLayers", countyLayers.getLayers());
+    console.log("stateLayers", stateLayers.getLayers());
+    const stateFips = stateToRemove.options.fips;
+    const stateLayerToRemove = stateLayers.getLayers().filter(layer => layer.options.fips === stateFips)[0];
+    const countiesLayerToRemove = countyLayers.getLayers().filter(layer => layer.options.state === stateFips)[0];
+
+    // remove state shape
+    stateLayers.removeLayer(stateLayerToRemove);
+
+    // remove state counties
+    countyLayers.removeLayer(countiesLayerToRemove);
   };
   const addCounties = countiesToAdd => {
     if (countiesToAdd.length) {
@@ -276,18 +320,17 @@ function TerritoryMap() {
       states: states,
       updateStates: setStates
     }));
-    if (states) {
-      console.log("states", states);
-      const stateFips = states.map(state => state.fips);
-      const stateLayersFips = stateLayers.getLayers().map(layer => layer.feature.properties.STATE);
-      const statesToAdd = stateFips.filter(fips => !stateLayersFips.includes(fips));
-      const statesToRemove = stateLayersFips.filter(fips => !stateFips.includes(fips));
-      addStates(statesToAdd);
-      removeStates(statesToRemove);
+    if (states.length > stateLayers.getLayers().length) {
+      const stateToAdd = states.filter(state => !stateLayers.getLayers().some(layer => layer.options.fips === state.fips))[0];
+      addSingleState(stateToAdd.fips);
+    }
+    if (states.length < stateLayers.getLayers().length) {
+      const stateToRemove = stateLayers.getLayers().filter(layer => !states.some(state => state.fips === layer.options.fips))[0];
+      removeSingleState(stateToRemove);
     }
   }, [states]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    if (counties) {
+    if (counties.length > countyLayers.getLayers().length) {
       const geoids = counties.map(county => county.properties.GEOID);
       const countyLayersGeoids = countyLayers.getLayers().map(layer => layer.feature.properties.GEOID);
       const countiesToAdd = geoids.filter(geoid => !countyLayersGeoids.includes(geoid));
@@ -297,23 +340,75 @@ function TerritoryMap() {
     }
   }, [counties]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    setCounties(prevCounties => {
-      return prevCounties.map(county => {
-        const countySelectionCounty = countySelection.filter(selectionCounty => selectionCounty.fips === county.properties.GEOID)[0];
-        if (countySelectionCounty) {
-          return {
-            ...county,
-            branch: countySelectionCounty.branch
-          };
-        }
-        return county;
+    console.log("countySelection", countySelection);
+    countySelection.forEach(county => {
+      const branchStyle = _assets_branches_json__WEBPACK_IMPORTED_MODULE_6__.filter(branch => branch.value === county.branch).style;
+
+      // set county layer style
+      // get county layer
+
+      //var countyLayer = countyLayers.getLayers().filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
+
+      console.log;
+      console.log("countyLayers", countyLayers.getLayers()[0]._layers);
+      Object.keys(countyLayers.getLayers()[0]).forEach(layer => {
+        console.log("layer", layer);
+
+        //layer.setStyle(branchStyle);
       });
+
+      /*
+      var countyLayer = countyLayers.getLayers()[0]._layers.filter((layer) => {
+            return layer.feature.properties.GEOID === county.properties.GEOID;
+            
+      
+          // setting style for counties with a style property
+          //const countiesLayers = layer._layers;
+            //console.log("countiesLayers", countiesLayers);
+            return countiesLayers.filter((countyLayer) => {
+              
+              return countyLayer.feature.properties.GEOID === county.properties.GEOID;
+            });
+      });
+        countyLayer.setStyle(branchStyle);
+      */
     });
+
+    /*
+    setCounties((prevCounties) => {
+          return prevCounties.map((county) => {
+              const countySelectionCounty = countySelection.filter((selectionCounty) => selectionCounty.fips === county.properties.GEOID)[0];
+              if (countySelectionCounty) {
+                  return {
+                    ...county,
+                    branch: countySelectionCounty.branch,
+                };
+              }
+              return county;
+          });
+      });
+    */
+
     countyCardRoot.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_CountyCard__WEBPACK_IMPORTED_MODULE_4__["default"], {
       countySelection: countySelection,
       updateCountySelection: setCountySelection
     }));
   }, [countySelection]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    if (Object.keys(selectedCounty).length === 0) {
+      return;
+    }
+    if (countySelection.length === 0) {
+      setCountySelection([selectedCounty]);
+    } else {
+      const countyInSelection = countySelection.some(county => county.properties.GEOID === selectedCounty.properties.GEOID);
+      if (countyInSelection) {
+        setCountySelection(prevCountySelection => prevCountySelection.filter(county => county.properties.GEOID !== selectedCounty.properties.GEOID));
+      } else {
+        setCountySelection(prevCountySelection => [...prevCountySelection, selectedCounty]);
+      }
+    }
+  }, [selectedCounty]);
 }
 
 /***/ }),

@@ -36,7 +36,7 @@ class AFCT_Admin {
 
         add_action('admin_post_save_afct_settings', array( $this->settings, 'save_settings' ) );
 
-        add_action('res_api_init', array( $this->settings, 'register_rest_routes' ) );
+        add_action('rest_api_init', array( $this->settings, 'register_rest_routes' ) );
 
     }
 

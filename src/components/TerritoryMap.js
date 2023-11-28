@@ -17,18 +17,25 @@ import {
  */
 import StateSelector from './StateSelector';
 import CountyCard from './CountyCard';
+import fips from '../assets/fips.json';
+import branches from '../assets/branches.json';
 
 export default function TerritoryMap() {
 
     const mapRef = useRef();
+
     // state layers
     const [states, setStates] = useState(admin.states !== '' ? admin.states : []);
     const [stateLayers, setStateLayers] = useState(L.layerGroup());
+
     // county layers
     const [counties, setCounties] = useState(admin.counties !== '' ? admin.counties : []);
     const [countyLayers, setCountyLayers] = useState(L.layerGroup());
+
     // county selection
     const [countySelection, setCountySelection] = useState([]);
+    const [selectedCounty, setSelectedCounty] = useState({});
+
     // root elements
     const stateSelectorRoot = createRoot(document.getElementById('state-selector'));
     const countyCardRoot = createRoot(document.getElementById('county-card'));
@@ -91,56 +98,113 @@ export default function TerritoryMap() {
 
     };
 
-    const addStates = (statesToAdd) => {
+    const addSingleState = (stateToAdd) => {
 
-        if (statesToAdd.length) {
+        const stateApi = admin.apiBase + '/state/' + stateToAdd;
 
-            statesToAdd.forEach((state) => {
+        fetch(stateApi)
+            .then(response => {
 
-                const stateJson = admin.apiBaseUrl + 'state/' + state + '.json';
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
 
-                // fetch api response from stateJson
+                return response.json();
 
-                console.log("stateJson", stateJson);
+            })
+            .then(stateJson => {
+
+                var stateData = turf.combine(stateJson);
+
+                var stateShape = turf.convex(
+                    stateData,
+                    {
+                        concavity: 1
+                    }
+                );
 
                 const stateLayer = L.geoJSON(
-                    stateJson,
+                    stateShape,
                     {
                         style: {
                             color: '#0a1944',
-                            weight: 1,
+                            weight: 2,
                             opacity: 1,
                             fillColor: 'transparent',
                             fillOpacity: 0,
                         },
+                        fips: stateToAdd
+                    },
+                );
+
+                const stateCounties = L.geoJSON(
+                    stateJson,
+                    {
+                        onEachFeature: (feature, layer) => {
+
+                            layer.setStyle({
+                                color: '#0a1944',
+                                weight: 1,
+                                opacity: .5,
+                                fillColor: 'transparent',
+                                fillOpacity: 0,
+                            });
+
+                            const stateName = fips.filter((state) => state.fips === feature.properties.STATEFP)[0].name;
+
+                            layer.bindTooltip(
+                                feature.properties.Name + ' County, ' + stateName,
+                                {
+                                    interactive: true
+                                }
+                            );
+
+                            layer.on('click', (e) => {
+
+                                setSelectedCounty(feature);
+
+                            });
+    
+                        },
+                        state: stateToAdd
                     }
                 );
 
-                setStateLayers((prevStateLayers) => prevStateLayers.addLayer(stateLayer))
+                setStateLayers((prevStateLayers) => prevStateLayers.addLayer(stateLayer));
+
+                setCountyLayers((prevCountyLayers) => prevCountyLayers.addLayer(stateCounties));
+
+            })
+            .catch(error => {
+
+                console.error('There has been a problem with your fetch operation:', error);
 
             });
 
             stateLayers.addTo(mapRef.current);
+            countyLayers.addTo(mapRef.current);
 
-        }
+    }
 
-    };
+    const removeSingleState = (stateToRemove) => {
 
-    const removeStates = (statesToRemove) => {
+        console.log("stateToRemove", stateToRemove);
+        console.log("countyLayers", countyLayers.getLayers());
+        console.log("stateLayers", stateLayers.getLayers());
 
-        if (statesToRemove.length) {
+        const stateFips = stateToRemove.options.fips;
 
-            statesToRemove.forEach((state) => {
+        const stateLayerToRemove = stateLayers.getLayers().filter((layer) => layer.options.fips === stateFips)[0];
 
-                const stateLayer = stateLayers.getLayers().filter((layer) => layer.feature.properties.STATE === state)[0];
+        const countiesLayerToRemove = countyLayers.getLayers().filter((layer) => layer.options.state === stateFips)[0];
 
-                stateLayers.removeLayer(stateLayer);
+        // remove state shape
+        stateLayers.removeLayer(stateLayerToRemove);
 
-            });
+        // remove state counties
+        countyLayers.removeLayer(countiesLayerToRemove);        
 
-        }
-
-    };
+    }
 
     const addCounties = (countiesToAdd) => {
 
@@ -207,28 +271,27 @@ export default function TerritoryMap() {
 
         stateSelectorRoot.render(<StateSelector states={states} updateStates={setStates} />);
 
-        if (states) {
+        if (states.length > stateLayers.getLayers().length) {
 
-            console.log("states", states);
+            const stateToAdd = states.filter((state) => !stateLayers.getLayers().some((layer) => layer.options.fips === state.fips))[0];
 
-            const stateFips = states.map((state) => state.fips);
-
-            const stateLayersFips = stateLayers.getLayers().map((layer) => layer.feature.properties.STATE);
-
-            const statesToAdd = stateFips.filter((fips) => !stateLayersFips.includes(fips));
-
-            const statesToRemove = stateLayersFips.filter((fips) => !stateFips.includes(fips));
-
-            addStates(statesToAdd);
-            removeStates(statesToRemove);
+            addSingleState(stateToAdd.fips);
 
         }
+
+        if (states.length < stateLayers.getLayers().length) {
+
+            const stateToRemove = stateLayers.getLayers().filter((layer) => !states.some((state) => state.fips === layer.options.fips))[0];
+
+            removeSingleState(stateToRemove);
+
+        }       
 
     }, [states]);
 
     useEffect(() => {
 
-        if (counties) {
+        if (counties.length > countyLayers.getLayers().length) {
 
             const geoids = counties.map((county) => county.properties.GEOID);
 
@@ -247,6 +310,55 @@ export default function TerritoryMap() {
 
     useEffect(() => {
 
+        console.log("countySelection", countySelection);
+
+        countySelection.forEach((county) => {
+
+            const branchStyle = branches.filter((branch) => branch.value === county.branch).style;
+
+            // set county layer style
+            // get county layer
+
+            //var countyLayer = countyLayers.getLayers().filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
+
+            
+
+            console.log
+            console.log("countyLayers", countyLayers.getLayers()[0]._layers);
+
+            Object.keys(countyLayers.getLayers()[0]).forEach((layer) => {
+
+                console.log("layer", layer);
+
+                //layer.setStyle(branchStyle);
+
+            });
+
+            /*
+            var countyLayer = countyLayers.getLayers()[0]._layers.filter((layer) => {
+
+                return layer.feature.properties.GEOID === county.properties.GEOID;
+
+                
+            
+                // setting style for counties with a style property
+                //const countiesLayers = layer._layers;
+
+                //console.log("countiesLayers", countiesLayers);
+
+                return countiesLayers.filter((countyLayer) => {
+                    
+                    return countyLayer.feature.properties.GEOID === county.properties.GEOID;
+
+                });
+            });
+
+            countyLayer.setStyle(branchStyle);
+            */
+
+        });
+
+        /*
         setCounties((prevCounties) => {
 
             return prevCounties.map((county) => {
@@ -267,8 +379,37 @@ export default function TerritoryMap() {
             });
 
         });
+        */
         
         countyCardRoot.render(<CountyCard countySelection={countySelection} updateCountySelection={setCountySelection} />);
 
     }, [countySelection]);
+
+    useEffect(() => {
+
+        if (Object.keys(selectedCounty).length === 0) {
+            return;
+        }
+
+        if (countySelection.length === 0 ) {
+
+            setCountySelection([selectedCounty]);
+
+        } else {
+
+            const countyInSelection = countySelection.some((county) => county.properties.GEOID === selectedCounty.properties.GEOID);
+
+            if (countyInSelection) {
+
+                setCountySelection((prevCountySelection) => prevCountySelection.filter((county) => county.properties.GEOID !== selectedCounty.properties.GEOID));
+
+            } else {
+
+                setCountySelection((prevCountySelection) => [...prevCountySelection, selectedCounty]);
+
+            }
+
+        }
+
+    }, [selectedCounty]);
 }

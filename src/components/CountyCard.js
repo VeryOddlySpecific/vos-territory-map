@@ -11,6 +11,7 @@ import {
 import { useState } from '@wordpress/element';
 
 import branches from '../assets/branches.json';
+import fips from '../assets/fips.json';
 
 export default function CountyCard({ countySelection, updateCountySelection }) {
 
@@ -43,9 +44,9 @@ export default function CountyCard({ countySelection, updateCountySelection }) {
     const [active, setActive] = useState(countiesAreActive(countySelection));
     const [branch, setBranch] = useState(getCountiesBranch(countySelection));    
 
-    const handleToggleChange = () => {
+    const handleToggleChange = (isActive) => {
 
-        setActive(prevActive => !prevActive);
+        setActive(isActive);
 
         updateCountySelection((prevCountySelection) => {
                 
@@ -53,7 +54,7 @@ export default function CountyCard({ countySelection, updateCountySelection }) {
 
                 return {
                     ...county,
-                    active: !prevActive,
+                    active: isActive,
                 };
 
             });
@@ -72,7 +73,7 @@ export default function CountyCard({ countySelection, updateCountySelection }) {
 
                 return {
                     ...county,
-                    branch: branch,
+                    branch: branch
                 };
 
             });
@@ -88,7 +89,7 @@ export default function CountyCard({ countySelection, updateCountySelection }) {
                     countySelection.length ? 
                         (
                             countySelection.map((county) => (
-                                <Heading key={county.fips} level={2}>{county.name}</Heading>
+                                <Heading key={county.properties.GEOID} level={2}>{county.properties.Name} County</Heading>
                             ))
                         ) : (
                             <Heading level={2}>Select A County</Heading>

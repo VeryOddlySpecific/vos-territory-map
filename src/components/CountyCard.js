@@ -63,9 +63,9 @@ export default function CountyCard({ countySelection, updateCountySelection }) {
 
     };
 
-    const handleBranchChange = (branch) => {
+    const handleBranchChange = (value) => {
 
-        setBranch(branch);
+        setBranch(value);
 
         updateCountySelection((prevCountySelection) => {
                 
@@ -73,7 +73,7 @@ export default function CountyCard({ countySelection, updateCountySelection }) {
 
                 return {
                     ...county,
-                    branch: branch
+                    branch: value
                 };
 
             });

@@ -29,8 +29,9 @@ export default function TerritoryMap() {
     const [stateLayers, setStateLayers] = useState(L.layerGroup());
 
     // county layers
+    // visual changes are made to the countyLayers state when countySelection is updated
     const [counties, setCounties] = useState(admin.counties !== '' ? admin.counties : []);
-    const [countyLayers, setCountyLayers] = useState(L.layerGroup());
+    const [countyLayers, setCountyLayers] = useState([]);
 
     // county selection
     const [countySelection, setCountySelection] = useState([]);
@@ -88,7 +89,7 @@ export default function TerritoryMap() {
                     }
                 );
 
-                setCountyLayers((prevCountyLayers) => prevCountyLayers.addLayer(countyLayer))
+                setCountyLayers(prevCountyLayers => [...prevCountyLayers, stateCounties])
 
             });
 
@@ -172,7 +173,9 @@ export default function TerritoryMap() {
 
                 setStateLayers((prevStateLayers) => prevStateLayers.addLayer(stateLayer));
 
-                setCountyLayers((prevCountyLayers) => prevCountyLayers.addLayer(stateCounties));
+                setCountyLayers(prevCountyLayers => [...prevCountyLayers, stateCounties]);
+
+                stateCounties.addTo(mapRef.current);
 
             })
             .catch(error => {
@@ -182,7 +185,7 @@ export default function TerritoryMap() {
             });
 
             stateLayers.addTo(mapRef.current);
-            countyLayers.addTo(mapRef.current);
+            //countyLayers.addTo(mapRef.current);
 
     }
 
@@ -225,7 +228,7 @@ export default function TerritoryMap() {
                     }
                 );
 
-                setCountyLayers((prevCountyLayers) => prevCountyLayers.addLayer(countyLayer))
+                setCountyLayers(prevCountyLayers => [...prevCountyLayers, stateCounties])
 
             });
 
@@ -289,6 +292,7 @@ export default function TerritoryMap() {
 
     }, [states]);
 
+    /*
     useEffect(() => {
 
         if (counties.length > countyLayers.getLayers().length) {
@@ -307,12 +311,123 @@ export default function TerritoryMap() {
         }
 
     }, [counties]);
+    */
 
     useEffect(() => {
 
-        console.log("countySelection", countySelection);
+        // for each countySelection, set the countyLayer style
+
+        /*
+        countySelection.forEach((county) => {
+
+            // if county.branch exists and is not empty
+            // find countyLayers > stateGroup > counties.forEach county where county.feature.properties.GEOID === county.properties.GEOID
+
+            if (county.active && county.branch && county.branch !== '') {
+
+                // get branch style
+                const branchStyle = branches.filter((branch) => branch.value === county.branch)[0].style;
+
+                const countyState = county.properties.STATEFP;
+
+                // get county layers for state
+                const stateCounties = countyLayers.find((stateGroup) => stateGroup.options.state === countyState);
+
+                // get county layer
+                const countyLayer = stateCounties._layers.filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
+            }
+
+        });
+        */
+
+        /*************************************************************/
+        /*************************************************************/
+        /******** HERE IS WHERE MY MOST RECENT LOGIC IS GOING ********/
+        /*************************************************************/
+        /*************************************************************/
+
+        // for each countySelection as county
+        //      get county layer
+        //      county layer can by found in countyLayers, an array of stateGroups
+        //      need to get the STATEFP from county.properties.STATEFP 
+        //      get stateGroup where stateGroup.options.state === county.properties.STATEFP
+        //          get county layer from stateGroup where layer.feature.properties.GEOID === county.properties.GEOID
+        //          set county layer style to branch style
 
         countySelection.forEach((county) => {
+           
+            const stateGroup = countyLayers.find(group => group.options.state === county.properties.STATEFP);
+
+            if (stateGroup) {
+
+                const countyLayer = stateGroup.getLayers().find(layer => layer.feature.properties.GEOID === county.properties.GEOID);
+
+                if (countyLayer) {
+
+                    const branchStyle = branches.find(branch => branch.value === county.branch).style;
+
+                    countyLayer.setStyle(branchStyle);
+
+                }
+
+            }
+            
+        });
+
+        // NOTE //
+        //
+        // at this moment, clicking on a county layer does not seem to do anything
+        // it throws no errors
+        // maybe check useEffect dependencies
+        //
+        // ENDNOTE //
+
+        /*************************************************************/
+        /*************************************************************/
+        /*************************************************************/
+        /*************************************************************/
+        /*************************************************************/
+
+        /*
+        console.log("countySelection", countySelection);
+
+        // county
+        countySelection.forEach((county) => {
+
+            console.log("county", county);
+
+            console.log("branches", branches);
+
+            // find matching branch
+            const matchBranch = branches.find((branch) => {
+
+                if (branch.value === Number(county.branch)) {
+                    
+                    
+
+                }
+                
+            });
+
+            
+            // if county has a property of branch and the branch is not empty
+            if (county.branch && county.branch !== '') {
+
+                // get style for branch
+                const branchStyle = branches.filter((branch) => branch.value === county.branch)[0].style;
+
+                // set county layer style
+                const countyLayer = countyLayers.getLayers().filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
+
+                countyLayer.setStyle(branchStyle);
+
+            }
+            
+
+        });
+        */
+
+            /*
 
             const branchStyle = branches.filter((branch) => branch.value === county.branch).style;
 
@@ -334,7 +449,7 @@ export default function TerritoryMap() {
 
             });
 
-            /*
+            
             var countyLayer = countyLayers.getLayers()[0]._layers.filter((layer) => {
 
                 return layer.feature.properties.GEOID === county.properties.GEOID;
@@ -354,9 +469,8 @@ export default function TerritoryMap() {
             });
 
             countyLayer.setStyle(branchStyle);
-            */
 
-        });
+            */
 
         /*
         setCounties((prevCounties) => {
@@ -385,24 +499,35 @@ export default function TerritoryMap() {
 
     }, [countySelection]);
 
+    // when selectedCounty is updated (on click on county layer)
     useEffect(() => {
 
+        // if no county is selected, return
         if (Object.keys(selectedCounty).length === 0) {
             return;
         }
 
+        // if countySelection is empty, add selectedCounty to countySelection
         if (countySelection.length === 0 ) {
 
             setCountySelection([selectedCounty]);
 
-        } else {
+        } 
+        
+        // if countySelection is not empty, check if selectedCounty is in countySelection
+        // if selectedCounty is in countySelection, remove selectedCounty from countySelection
+        // if selectedCounty is not in countySelection, add selectedCounty to countySelection
+        if (countySelection.length > 0) {
 
+            // check if selectedCounty is in countySelection
             const countyInSelection = countySelection.some((county) => county.properties.GEOID === selectedCounty.properties.GEOID);
 
+            // if selectedCounty is in countySelection, remove selectedCounty from countySelection
             if (countyInSelection) {
 
                 setCountySelection((prevCountySelection) => prevCountySelection.filter((county) => county.properties.GEOID !== selectedCounty.properties.GEOID));
 
+            // if selectedCounty is not in countySelection, add selectedCounty to countySelection
             } else {
 
                 setCountySelection((prevCountySelection) => [...prevCountySelection, selectedCounty]);

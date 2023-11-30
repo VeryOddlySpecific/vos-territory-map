@@ -10,6 +10,8 @@ import fips from '../assets/fips.json';
 
 export default function StateSelector({ states, updateStates }) {
 
+   
+
     return (
         <Card>
             <CardHeader>
@@ -20,13 +22,19 @@ export default function StateSelector({ states, updateStates }) {
                     <ToggleControl
                         key={state.fips}
                         label={state.name}
-                        checked={states.some((selectedState) => selectedState.fips === state.fips)}
+                        checked={states.includes(state)}
                         onChange={(checked) => {
+                            
                             if (checked) {
+
                                 updateStates((prevStates) => [...prevStates, state]);
+
                             } else {
+
                                 updateStates((prevStates) => prevStates.filter((prevState) => prevState.fips !== state.fips));
+
                             }
+                            
                         }}
                     />
                 ))}

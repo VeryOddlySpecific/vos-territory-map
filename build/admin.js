@@ -115,7 +115,7 @@ function StateSelector({
   }, "States")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.CardBody, null, _assets_fips_json__WEBPACK_IMPORTED_MODULE_2__.map(state => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
     key: state.fips,
     label: state.name,
-    checked: states.some(selectedState => selectedState.fips === state.fips),
+    checked: states.includes(state),
     onChange: checked => {
       if (checked) {
         updateStates(prevStates => [...prevStates, state]);
@@ -167,71 +167,110 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function TerritoryMap() {
+  /**
+   * Unused variables
+   * 
+   * const [clickedState, setClickedState] = useState({});
+   * const [counties, setCounties] = useState(admin.counties !== '' ? admin.counties : []);
+   * const [clickedCounty, setClickedCounty] = useState({});
+   * 
+   */
+
   const mapRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useRef)();
-
-  // state layers
+  const [stateData, setStateData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({});
   const [states, setStates] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(admin.states !== '' ? admin.states : []);
-  const [stateLayers, setStateLayers] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(L.layerGroup());
-
-  // county layers
-  // visual changes are made to the countyLayers state when countySelection is updated
-  const [counties, setCounties] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(admin.counties !== '' ? admin.counties : []);
-  const [countyLayers, setCountyLayers] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
-
-  // county selection
-  const [countySelection, setCountySelection] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
-  const [selectedCounty, setSelectedCounty] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({});
-
-  // root elements
+  const [stateShapes, setStateShapes] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+  const [stateCounties, setStateCounties] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+  const [selectedCounties, setSelectedCounties] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
   const stateSelectorRoot = (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createRoot)(document.getElementById('state-selector'));
   const countyCardRoot = (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createRoot)(document.getElementById('county-card'));
-  const addInitialStates = () => {
-    if (states.length) {
-      states.forEach(state => {
-        const stateLayer = L.geoJSON(state, {
-          style: {
-            color: '#0a1944',
-            weight: 1,
-            opacity: 1,
-            fillColor: 'transparent',
-            fillOpacity: 0
-          }
-        });
-        setStateLayers(prevStateLayers => prevStateLayers.addLayer(stateLayer));
-      });
-      stateLayers.addTo(mapRef.current);
-    }
+  const updateCountySelection = county => {
+    console.log("Clicked county GEOID:", county.properties.GEOID);
+    console.log("Current countySelection:", countySelection);
+    const countyId = county.properties.GEOID;
+
+    // Check if the county is already in the selection
+    const countyIsInSelection = countySelection.some(c => c.properties.GEOID === countyId);
+
+    // Update the selection: remove if present, add if not
+    setCountySelection(prevSelection => countyIsInSelection ? prevSelection.filter(c => c.properties.GEOID !== countyId) // Deselect the county
+    : [...prevSelection, county] // Select the county
+    );
   };
-  const addInitialCounties = () => {
-    if (counties.length) {
-      counties.forEach(county => {
-        const countyLayer = L.geoJSON(county, {
-          style: {
-            color: '#0a1944',
-            weight: 1,
-            opacity: 1,
-            fillColor: 'transparent',
-            fillOpacity: 0
+
+  /*
+  const getStateData = (stateFips) => {
+        const apiRoute = admin.apiBase + '/state/' + stateFips;
+        var stateData = [];
+        fetch(apiRoute)
+      .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
           }
+            return response.json();
+        })
+      .then(stateJson => {
+            const stateData = turf.combine(stateJson);
+          const stateBorder = turf.convex(
+              stateData,
+              {
+                  concavity: 1
+              }
+          );
+            const stateShape = L.geoJSON(
+              stateBorder,
+              {
+                  style: {
+                      color: '#0a1944',
+                      weight: 2,
+                      opacity: 1,
+                      fillColor: 'transparent',
+                      fillOpacity: 0,
+                  },
+                  state: stateFips
+              }
+          );
+            const stateCounties = L.geoJSON(
+              stateJson,
+              {
+                  onEachFeature: (feature, layer) => {
+                        layer.setStyle({
+                          color: '#0a1944',
+                          weight: 1,
+                          opacity: .5,
+                          fillColor: 'transparent',
+                          fillOpacity: 0,
+                      });
+                    }
+              }
+          );
+            stateData.push(stateShape);
+          stateData.push(stateCounties);
+        })
+      .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
         });
-        setCountyLayers(prevCountyLayers => [...prevCountyLayers, stateCounties]);
-      });
-      countyLayers.addTo(mapRef.current);
+        return stateData;
     }
-  };
+  */
+
   const addSingleState = stateToAdd => {
     const stateApi = admin.apiBase + '/state/' + stateToAdd;
+    console.log("going to check stateApi", stateApi);
     fetch(stateApi).then(response => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       return response.json();
     }).then(stateJson => {
+      console.log("success, stateJson", stateJson);
       var stateData = turf.combine(stateJson);
-      var stateShape = turf.convex(stateData, {
+      var layerShape = turf.convex(stateData, {
         concavity: 1
       });
-      const stateLayer = L.geoJSON(stateShape, {
+
+      // stateShape is a layerGroup with a single layer that is the state shape
+      const stateShape = L.geoJSON(layerShape, {
         style: {
           color: '#0a1944',
           weight: 2,
@@ -241,6 +280,8 @@ function TerritoryMap() {
         },
         fips: stateToAdd
       });
+
+      // stateCounties is a layerGroup with a layer for each county in the state
       const stateCounties = L.geoJSON(stateJson, {
         onEachFeature: (feature, layer) => {
           layer.setStyle({
@@ -254,22 +295,22 @@ function TerritoryMap() {
           layer.bindTooltip(feature.properties.Name + ' County, ' + stateName, {
             interactive: true
           });
-          layer.on('click', e => {
-            setSelectedCounty(feature);
+          layer.on('click', () => {
+            setClickedCounty(feature);
           });
         },
         state: stateToAdd
       });
-      setStateLayers(prevStateLayers => prevStateLayers.addLayer(stateLayer));
-      setCountyLayers(prevCountyLayers => [...prevCountyLayers, stateCounties]);
-      stateCounties.addTo(mapRef.current);
+
+      // add stateShape to stateLayerGroups array
+      // add stateCounties to countyLayerGroups array
+
+      setStateLayerGroups(prevGroups => [...prevGroups, stateShape]);
+      setCountyLayerGroups(prevGroups => [...prevGroups, stateCounties]);
     }).catch(error => {
       console.error('There has been a problem with your fetch operation:', error);
     });
-    stateLayers.addTo(mapRef.current);
-    //countyLayers.addTo(mapRef.current);
   };
-
   const removeSingleState = stateToRemove => {
     console.log("stateToRemove", stateToRemove);
     console.log("countyLayers", countyLayers.getLayers());
@@ -284,231 +325,355 @@ function TerritoryMap() {
     // remove state counties
     countyLayers.removeLayer(countiesLayerToRemove);
   };
-  const addCounties = countiesToAdd => {
-    if (countiesToAdd.length) {
-      countiesToAdd.forEach(county => {
-        const countyLayer = L.geoJSON(county, {
-          style: {
-            color: '#0a1944',
-            weight: 1,
-            opacity: 1,
-            fillColor: 'transparent',
-            fillOpacity: 0
-          }
-        });
-        setCountyLayers(prevCountyLayers => [...prevCountyLayers, stateCounties]);
-      });
-      countyLayers.addTo(mapRef.current);
+
+  /**
+       * const function to get state data object
+       */
+  const processState = (stateFips, operation = 'add') => {
+    //const [stateData, setStateData] = useState({});
+
+    //var stateData = {};
+
+    if (operation === 'remove') {
+      console.log("stateFips", stateFips);
+      console.log("stateShapes", stateShapes);
+      console.log("stateCounties", stateCounties);
+      const stateShapeToRemove = stateShapes.filter(shape => shape.options.fips === stateFips)[0];
+      const stateCountiesToRemove = stateCounties.filter(counties => counties.options.fips === stateFips)[0];
+      console.log("stateShapeToRemove", stateShapeToRemove);
+      console.log("stateCountiesToRemove", stateCountiesToRemove);
+      setStateShapes(prevShapes => prevShapes.filter(shape => shape.options.fips !== stateFips));
+      setStateCounties(prevCounties => prevCounties.filter(counties => counties.options.fips !== stateFips));
+      mapRef.current.removeLayer(stateShapeToRemove);
+      mapRef.current.removeLayer(stateCountiesToRemove);
+      return;
     }
-  };
-  const removeCounties = countiesToRemove => {
-    if (countiesToRemove.length) {
-      countiesToRemove.forEach(county => {
-        const countyLayer = countyLayers.getLayers().filter(layer => layer.feature.properties.GEOID === county)[0];
-        countyLayers.removeLayer(countyLayer);
+    const apiRoute = admin.apiBase + '/state/' + stateFips;
+    console.log("apiRoute", apiRoute);
+    fetch(apiRoute).then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    }).then(stateJson => {
+      const stateData = turf.combine(stateJson);
+      const stateShape = turf.convex(stateData, {
+        concavity: 1
       });
-    }
+      const stateCounties = stateJson;
+
+      //stateData.shape = stateShape;
+      //stateData.counties = stateCounties;
+
+      setStateData({
+        shape: stateShape,
+        counties: stateCounties,
+        fips: stateFips
+      });
+    }).catch(error => {
+      console.error('There has been a problem with your fetch operation:', error);
+    });
+
+    //console.log("stateData inside", stateData);
+
+    //return stateData;
   };
+
+  /**
+   * const function to update selectedCounties
+   */
+  const updateSelectedCounties = county => {
+    setSelectedCounties(prevCounties => {
+      const isSelected = prevCounties.includes(county);
+      if (isSelected) {
+        return prevCounties.filter(prevCounty => prevCounty !== county);
+      } else {
+        return [...prevCounties, county];
+      }
+    });
+  };
+
+  /**
+   * Stage 1
+   * initialize map
+   * 
+   * no dependencies
+   */
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    console.log("map initialized");
     mapRef.current = L.map('afc-territory-map', {
       center: [39.8283, -98.5795],
       zoom: 4,
       zoomControl: false
     });
-    addInitialStates();
-    addInitialCounties();
   }, []);
+
+  /**
+   * Stage 2
+   * add state selector
+   * 
+   * dependencies: states
+   */
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    console.log("states hooked", states);
     stateSelectorRoot.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_StateSelector__WEBPACK_IMPORTED_MODULE_3__["default"], {
       states: states,
       updateStates: setStates
     }));
-    if (states.length > stateLayers.getLayers().length) {
-      const stateToAdd = states.filter(state => !stateLayers.getLayers().some(layer => layer.options.fips === state.fips))[0];
-      addSingleState(stateToAdd.fips);
-    }
-    if (states.length < stateLayers.getLayers().length) {
-      const stateToRemove = stateLayers.getLayers().filter(layer => !states.some(state => state.fips === layer.options.fips))[0];
-      removeSingleState(stateToRemove);
-    }
-  }, [states]);
-
-  /*
-  useEffect(() => {
-        if (counties.length > countyLayers.getLayers().length) {
-            const geoids = counties.map((county) => county.properties.GEOID);
-            const countyLayersGeoids = countyLayers.getLayers().map((layer) => layer.feature.properties.GEOID);
-            const countiesToAdd = geoids.filter((geoid) => !countyLayersGeoids.includes(geoid));
-            const countiesToRemove = countyLayersGeoids.filter((geoid) => !geoids.includes(geoid));
-            addCounties(countiesToAdd);
-          removeCounties(countiesToRemove);
-        }
-    }, [counties]);
-  */
-
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    // for each countySelection, set the countyLayer style
-
-    /*
-    countySelection.forEach((county) => {
-          // if county.branch exists and is not empty
-        // find countyLayers > stateGroup > counties.forEach county where county.feature.properties.GEOID === county.properties.GEOID
-          if (county.active && county.branch && county.branch !== '') {
-              // get branch style
-            const branchStyle = branches.filter((branch) => branch.value === county.branch)[0].style;
-              const countyState = county.properties.STATEFP;
-              // get county layers for state
-            const stateCounties = countyLayers.find((stateGroup) => stateGroup.options.state === countyState);
-              // get county layer
-            const countyLayer = stateCounties._layers.filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
-        }
+    if (states.length === 0) {
+      if (stateShapes.length === 0) {
+        return;
+      }
+      stateShapes.forEach(shape => {
+        mapRef.current.removeLayer(shape);
       });
-    */
+      setStateShapes([]);
+      if (stateCounties.length === 0) {
+        return;
+      }
+      stateCounties.forEach(counties => {
+        mapRef.current.removeLayer(counties);
+      });
+      setStateCounties([]);
+    }
 
-    /*************************************************************/
-    /*************************************************************/
-    /******** HERE IS WHERE MY MOST RECENT LOGIC IS GOING ********/
-    /*************************************************************/
-    /*************************************************************/
-
-    // for each countySelection as county
-    //      get county layer
-    //      county layer can by found in countyLayers, an array of stateGroups
-    //      need to get the STATEFP from county.properties.STATEFP 
-    //      get stateGroup where stateGroup.options.state === county.properties.STATEFP
-    //          get county layer from stateGroup where layer.feature.properties.GEOID === county.properties.GEOID
-    //          set county layer style to branch style
-
-    countySelection.forEach(county => {
-      const stateGroup = countyLayers.find(group => group.options.state === county.properties.STATEFP);
-      if (stateGroup) {
-        const countyLayer = stateGroup.getLayers().find(layer => layer.feature.properties.GEOID === county.properties.GEOID);
-        if (countyLayer) {
-          const branchStyle = _assets_branches_json__WEBPACK_IMPORTED_MODULE_6__.find(branch => branch.value === county.branch).style;
-          countyLayer.setStyle(branchStyle);
+    // check if states need to be added
+    states.forEach(state => {
+      if (stateShapes.length === 0) {
+        processState(state.fips);
+      } else {
+        const stateOnMap = stateShapes.includes(shape => shape.options.fips === state.fips);
+        if (stateOnMap) {
+          return;
+        } else {
+          processState(state.fips);
         }
       }
     });
 
-    // NOTE //
-    //
-    // at this moment, clicking on a county layer does not seem to do anything
-    // it throws no errors
-    // maybe check useEffect dependencies
-    //
-    // ENDNOTE //
+    // check if states need to be removed
+    stateShapes.forEach(shape => {
+      if (states.length === 0) {
+        return;
+      }
 
-    /*************************************************************/
-    /*************************************************************/
-    /*************************************************************/
-    /*************************************************************/
-    /*************************************************************/
-
-    /*
-    console.log("countySelection", countySelection);
-      // county
-    countySelection.forEach((county) => {
-          console.log("county", county);
-          console.log("branches", branches);
-          // find matching branch
-        const matchBranch = branches.find((branch) => {
-              if (branch.value === Number(county.branch)) {
-                
-                
-              }
-            
-        });
-          
-        // if county has a property of branch and the branch is not empty
-        if (county.branch && county.branch !== '') {
-              // get style for branch
-            const branchStyle = branches.filter((branch) => branch.value === county.branch)[0].style;
-              // set county layer style
-            const countyLayer = countyLayers.getLayers().filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
-              countyLayer.setStyle(branchStyle);
-          }
-        
-      });
-    */
-
-    /*
-      const branchStyle = branches.filter((branch) => branch.value === county.branch).style;
-      // set county layer style
-    // get county layer
-      //var countyLayer = countyLayers.getLayers().filter((layer) => layer.feature.properties.GEOID === county.properties.GEOID)[0];
-      
-      console.log
-    console.log("countyLayers", countyLayers.getLayers()[0]._layers);
-      Object.keys(countyLayers.getLayers()[0]).forEach((layer) => {
-          console.log("layer", layer);
-          //layer.setStyle(branchStyle);
-      });
-      
-    var countyLayer = countyLayers.getLayers()[0]._layers.filter((layer) => {
-          return layer.feature.properties.GEOID === county.properties.GEOID;
-          
-    
-        // setting style for counties with a style property
-        //const countiesLayers = layer._layers;
-          //console.log("countiesLayers", countiesLayers);
-          return countiesLayers.filter((countyLayer) => {
-            
-            return countyLayer.feature.properties.GEOID === county.properties.GEOID;
-          });
+      // shapeNotSelected is true if shape is not in states
+      const shapeNotSelected = states.every(state => state.fips !== shape.options.fips);
+      if (shapeNotSelected) {
+        processState(shape.options.fips, 'remove');
+      }
     });
-      countyLayer.setStyle(branchStyle);
-      */
-
-    /*
-    setCounties((prevCounties) => {
-          return prevCounties.map((county) => {
-              const countySelectionCounty = countySelection.filter((selectionCounty) => selectionCounty.fips === county.properties.GEOID)[0];
-              if (countySelectionCounty) {
-                  return {
-                    ...county,
-                    branch: countySelectionCounty.branch,
-                };
-              }
-              return county;
-          });
-      });
-    */
-
-    countyCardRoot.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_CountyCard__WEBPACK_IMPORTED_MODULE_4__["default"], {
-      countySelection: countySelection,
-      updateCountySelection: setCountySelection
-    }));
-  }, [countySelection]);
-
-  // when selectedCounty is updated (on click on county layer)
+  }, [states]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    // if no county is selected, return
-    if (Object.keys(selectedCounty).length === 0) {
+    console.log("stateData hooked", stateData);
+    const stateShape = L.geoJSON(stateData.shape, {
+      style: {
+        color: '#0a1944',
+        weight: 2,
+        opacity: 1,
+        fillColor: 'transparent',
+        fillOpacity: 0
+      },
+      fips: stateData.fips
+    });
+    const stateCounties = L.geoJSON(stateData.counties, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: '#0a1944',
+          weight: 1,
+          opacity: .5,
+          fillColor: 'transparent',
+          fillOpacity: 0
+        });
+        layer.on('click', () => {
+          updateSelectedCounties(feature);
+        });
+      },
+      fips: stateData.fips
+    });
+    setStateShapes(prevShapes => [...prevShapes, stateShape]);
+    setStateCounties(prevCounties => [...prevCounties, stateCounties]);
+  }, [stateData]);
+
+  /**
+   * Stage 3
+   * add county card
+   * 
+   * dependencies: selectedCounties
+   */
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    console.log("selectedCounties hooked", selectedCounties);
+    countyCardRoot.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_CountyCard__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      countySelection: selectedCounties,
+      updateCountySelection: setSelectedCounties
+    }));
+  }, [selectedCounties]);
+
+  /**
+   * Stage 4
+   * add state layers
+   * 
+   * dependencies: stateShapes
+   */
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    console.log("stateShapes hooked", stateShapes);
+
+    // if stateLayerGroups is empty, return
+
+    if (stateShapes.length === 0) {
       return;
     }
 
-    // if countySelection is empty, add selectedCounty to countySelection
-    if (countySelection.length === 0) {
-      setCountySelection([selectedCounty]);
+    // add state layers to mapRef.current
+
+    stateShapes.forEach(shape => {
+      mapRef.current.addLayer(shape);
+    });
+  }, [stateShapes]);
+
+  /**
+   * Stage 5
+   * add county layers
+   * 
+   * dependencies: stateCounties
+   */
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    console.log("stateCounties hooked", stateCounties);
+
+    // if countyLayerGroups is empty, return
+
+    if (stateCounties.length === 0) {
+      return;
     }
 
-    // if countySelection is not empty, check if selectedCounty is in countySelection
-    // if selectedCounty is in countySelection, remove selectedCounty from countySelection
-    // if selectedCounty is not in countySelection, add selectedCounty to countySelection
-    if (countySelection.length > 0) {
-      // check if selectedCounty is in countySelection
-      const countyInSelection = countySelection.some(county => county.properties.GEOID === selectedCounty.properties.GEOID);
+    // add county layers to mapRef.current
 
-      // if selectedCounty is in countySelection, remove selectedCounty from countySelection
-      if (countyInSelection) {
-        setCountySelection(prevCountySelection => prevCountySelection.filter(county => county.properties.GEOID !== selectedCounty.properties.GEOID));
+    stateCounties.forEach(county => {
+      mapRef.current.addLayer(county);
+    });
+  }, [stateCounties]);
 
-        // if selectedCounty is not in countySelection, add selectedCounty to countySelection
-      } else {
-        setCountySelection(prevCountySelection => [...prevCountySelection, selectedCounty]);
+  /*
+  // useEffect for states
+  // this hook is triggered when selected states is updated
+  useEffect(() => {
+      
+      stateSelectorRoot.render(<StateSelector states={states} updateStates={setStates} />);
+        // if states is empty, return
+      // else add or remove state from stateLayers
+        if (states.length === 0) {
+          return;
       }
-    }
-  }, [selectedCounty]);
+        // iterate through states
+      states.forEach((state) => {
+            if(stateLayerGroups.length === 0) {
+                //console.log("stateLayerGroups is empty: adding state", state.name);
+              //addSingleState(state.fips);
+              const stateData = getStateData(state.fips);
+              console.log("stateData", stateData);
+            }
+            console.log("state outside if", state);
+          console.log("state layer groups", stateLayerGroups);
+          // check if each state is in stateLayerGroups
+          if (!stateLayerGroups.some((group) => group.options.state === state.fips)) {
+                console.log("add triggered for " + state.name);
+              // if not, add the state
+              //console.log("remove " + state.name);
+              addSingleState(state.fips);
+            }
+        });
+        // iterate through stateLayerGroups
+      stateLayerGroups.forEach((group) => {
+            // check if each stateLayerGroup is in states
+          if (!states.some((state) => state.fips === group.options.state)) {
+                console.log("remove triggered for " + group.options.state);
+              console.log("state", state);
+              console.log("group", group);
+              // if not, remove the state
+              removeSingleState(group);
+            }
+        });
+    }, [states]);
+    // useEffect for stateLayerGroups
+  useEffect(() => {
+        // if stateLayerGroups is empty, return
+      // else add stateLayerGroups to mapRef.current
+        if (stateLayerGroups.length === 0) {
+            return;
+        }
+        // iterate through stateLayerGroups
+      stateLayerGroups.forEach((stateGroup) => {
+            // check if each stateLayerGroup is in mapRef.current
+          if (!mapRef.current.hasLayer(stateGroup)) {
+                // if not, add the stateLayerGroup
+              mapRef.current.addLayer(stateGroup);
+                // then add the countyLayerGroup
+              //console.log("countyGroup", countyGroup);
+            }
+        });
+      }, [stateLayerGroups]);
+    // useEffect for countyLayerGroups
+  useEffect(() => {
+        // if countyLayerGroups is empty, return
+      // else add countyLayerGroups to mapRef.current
+        if (countyLayerGroups.length === 0) {
+            return;
+        }
+        // iterate through countyLayerGroups
+      countyLayerGroups.forEach((countyGroup) => {
+            // check if each countyLayerGroup is in mapRef.current
+          if (!mapRef.current.hasLayer(countyGroup)) {
+                // if not, add the countyLayerGroup
+              mapRef.current.addLayer(countyGroup);
+            }
+        });
+    }, [countyLayerGroups]);
+    
+  // useEffect for countySelection
+  useEffect(() => {
+      
+      countyCardRoot.render(<CountyCard countySelection={countySelection} updateCountySelection={setCountySelection} />);
+    }, [countySelection]);
+    // useEffect for clickedCounty
+  useEffect(() => {
+        // if clickedCounty is empty, return
+      if (Object.keys(clickedCounty).length === 0) {
+          return;
+      }
+      
+      console.log("Clicked county GEOID:", clickedCounty.properties.GEOID);
+      console.log("Current countySelection:", countySelection);
+      
+      const countyId = clickedCounty.properties.GEOID;
+  
+      // Check if the county is already in the selection
+      const countyIsInSelection = countySelection.some(c => c.properties.GEOID === countyId);
+  
+      // Update the selection: remove if present, add if not
+      setCountySelection(prevSelection => 
+          countyIsInSelection
+              ? prevSelection.filter(c => c.properties.GEOID !== countyId) // Deselect the county
+              : [...prevSelection, clickedCounty] // Select the county
+      );  
+      
+  }, [clickedCounty]);
+    useEffect(() => {
+      
+      // if clickedState is empty, return
+      if (Object.keys(clickedState).length === 0) {
+          return;
+      }
+        console.log("clickedState", clickedState);
+        if (clickedState.active) {
+            console.log("clickedState is active");
+            // add state to states
+          setStates((prevStates) => [...prevStates, clickedState]);
+        } else {
+            console.log("clickedState is not active");
+        }
+        // if clickedState is in
+    }, [clickedState]);
+  */
 }
 
 /***/ }),

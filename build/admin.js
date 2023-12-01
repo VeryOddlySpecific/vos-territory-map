@@ -421,12 +421,15 @@ function TerritoryMap() {
       updateStates: setStates
     }));
     if (states.length === 0) {
+      console.log("states is empty");
       if (stateShapes.length === 0) {
         return;
       }
       stateShapes.forEach(shape => {
+        console.log("removing shape", shape);
         mapRef.current.removeLayer(shape);
       });
+      console.log("current mapRef", mapRef.current);
       setStateShapes([]);
       if (stateCounties.length === 0) {
         return;
@@ -734,7 +737,7 @@ module.exports = JSON.parse('[{"label":"La Vista, Nebraska","value":1,"style":{"
   \******************************/
 /***/ ((module) => {
 
-module.exports = JSON.parse('[{"fips":"01","name":"Alabama"},{"fips":"04","name":"Arizona"},{"fips":"05","name":"Arkansas"},{"fips":"06","name":"California"},{"fips":"08","name":"Colorado"},{"fips":"09","name":"Connecticut"},{"fips":"10","name":"Delaware"},{"fips":"12","name":"Florida"},{"fips":"13","name":"Georgia"},{"fips":"16","name":"Idaho"},{"fips":"17","name":"Illinois"},{"fips":"18","name":"Indiana"},{"fips":"19","name":"Iowa"},{"fips":"20","name":"Kansas"},{"fips":"21","name":"Kentucky"},{"fips":"22","name":"Louisiana"},{"fips":"23","name":"Maine"},{"fips":"24","name":"Maryland"},{"fips":"25","name":"Massachusetts"},{"fips":"26","name":"Michigan"},{"fips":"27","name":"Minnesota"},{"fips":"28","name":"Mississippi"},{"fips":"29","name":"Missouri"},{"fips":"30","name":"Montana"},{"fips":"31","name":"Nebraska"},{"fips":"32","name":"Nevada"},{"fips":"33","name":"New Hampshire"},{"fips":"34","name":"New Jersey"},{"fips":"35","name":"New Mexico"},{"fips":"36","name":"New York"},{"fips":"37","name":"North Carolina"},{"fips":"38","name":"North Dakota"},{"fips":"39","name":"Ohio"},{"fips":"40","name":"Oklahoma"},{"fips":"41","name":"Oregon"},{"fips":"42","name":"Pennsylvania"},{"fips":"44","name":"Rhode Island"},{"fips":"45","name":"South Carolina"},{"fips":"46","name":"South Dakota"},{"fips":"47","name":"Tennessee"},{"fips":"48","name":"Texas"},{"fips":"49","name":"Utah"},{"fips":"50","name":"Vermont"},{"fips":"51","name":"Virginia"},{"fips":"53","name":"Washington"},{"fips":"54","name":"West Virginia"},{"fips":"55","name":"Wisconsin"},{"fips":"56","name":"Wyoming"}]');
+module.exports = JSON.parse('[{"fips":"01","name":"Alabama","abbr":"AL"},{"fips":"04","name":"Arizona","abbr":"AZ"},{"fips":"05","name":"Arkansas","abbr":"AR"},{"fips":"06","name":"California","abbr":"CA"},{"fips":"08","name":"Colorado","abbr":"CO"},{"fips":"09","name":"Connecticut","abbr":"CT"},{"fips":"10","name":"Delaware","abbr":"DE"},{"fips":"12","name":"Florida","abbr":"FL"},{"fips":"13","name":"Georgia","abbr":"GA"},{"fips":"16","name":"Idaho","abbr":"ID"},{"fips":"17","name":"Illinois","abbr":"IL"},{"fips":"18","name":"Indiana","abbr":"IN"},{"fips":"19","name":"Iowa","abbr":"IA"},{"fips":"20","name":"Kansas","abbr":"KS"},{"fips":"21","name":"Kentucky","abbr":"KY"},{"fips":"22","name":"Louisiana","abbr":"LA"},{"fips":"23","name":"Maine","abbr":"ME"},{"fips":"24","name":"Maryland","abbr":"MD"},{"fips":"25","name":"Massachusetts","abbr":"MA"},{"fips":"26","name":"Michigan","abbr":"MI"},{"fips":"27","name":"Minnesota","abbr":"MN"},{"fips":"28","name":"Mississippi","abbr":"MS"},{"fips":"29","name":"Missouri","abbr":"MO"},{"fips":"30","name":"Montana","abbr":"MT"},{"fips":"31","name":"Nebraska","abbr":"NE"},{"fips":"32","name":"Nevada","abbr":"NV"},{"fips":"33","name":"New Hampshire","abbr":"NH"},{"fips":"34","name":"New Jersey","abbr":"NJ"},{"fips":"35","name":"New Mexico","abbr":"NM"},{"fips":"36","name":"New York","abbr":"NY"},{"fips":"37","name":"North Carolina","abbr":"NC"},{"fips":"38","name":"North Dakota","abbr":"ND"},{"fips":"39","name":"Ohio","abbr":"OH"},{"fips":"40","name":"Oklahoma","abbr":"OK"},{"fips":"41","name":"Oregon","abbr":"OR"},{"fips":"42","name":"Pennsylvania","abbr":"PA"},{"fips":"44","name":"Rhode Island","abbr":"RI"},{"fips":"45","name":"South Carolina","abbr":"SC"},{"fips":"46","name":"South Dakota","abbr":"SD"},{"fips":"47","name":"Tennessee","abbr":"TN"},{"fips":"48","name":"Texas","abbr":"TX"},{"fips":"49","name":"Utah","abbr":"UT"},{"fips":"50","name":"Vermont","abbr":"VT"},{"fips":"51","name":"Virginia","abbr":"VA"},{"fips":"53","name":"Washington","abbr":"WA"},{"fips":"54","name":"West Virginia","abbr":"WV"},{"fips":"55","name":"Wisconsin","abbr":"WI"},{"fips":"56","name":"Wyoming","abbr":"WY"}]');
 
 /***/ })
 

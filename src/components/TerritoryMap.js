@@ -384,7 +384,11 @@ export default function TerritoryMap() {
   
         if (states.length === 0) {
 
+            console.log("states is empty")
+
             if (stateShapes.length === 0) {
+
+                
 
                 return;
 
@@ -392,9 +396,13 @@ export default function TerritoryMap() {
 
             stateShapes.forEach((shape) => {
 
+                console.log("removing shape", shape);
+
                 mapRef.current.removeLayer(shape);
 
             });
+
+            console.log("current mapRef", mapRef.current)
 
             setStateShapes([]);
 

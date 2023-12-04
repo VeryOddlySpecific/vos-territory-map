@@ -4,7 +4,7 @@ class AFCT_Public {
 
     public function enqueue_styles_scripts() {
 
-        $enqueue_items = json_decode( file_get_contents( AFCT_PATH . 'assets/enqueue.json' ), true );
+        $enqueue_items = json_decode( file_get_contents( AFCT_PATH . 'includes/assets/enqueue.json' ), true );
 
         foreach ( $enqueue_items as $item ) {
 

@@ -5,7 +5,8 @@ module.exports = {
     ...defaultConfig,
     entry: {
         'admin': './src/admin.js',
-        'public': './src/public.js'
+        'public': './src/public.js',
+        'test': './src/test.js',
     },
     output: {
         path: path.join(__dirname, '/build'),

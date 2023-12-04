@@ -1,87 +1,37 @@
 import {
     useContext,
-    useEffect
+    useEffect,
+    useRef
 } from '@wordpress/element';
 
 import { MapContext } from './MapContext';
 
-
-
 const MapProcessor = () => {
 
-    const { activeRegions, activeSubregions, activeSelection } = useContext(MapContext);
+    const { activeRegions, activeSubregions, activeSelection, setActiveSelection, mapRef } = useContext(MapContext);
+    const addedRegions = useRef(new Set());
+    const selectedSubregions = useRef(new Set());
 
-    const [regionData, setRegionData] = useState({});
+    const updateActiveSelection = (layerId) => {
 
+        const newSelection = [...activeSelection];
+        const selectionIndex = newSelection.findIndex(item => item === layerId);
 
-    const handleRegionData = (data) => {
+        if (selectionIndex === -1) {
 
-        // data is an object with the following properties:
-        //     - fips: string
-        //     - name: string
-        //     - data: object
-    
-        // set region boundary shape layer
+            newSelection.push(layerId);
+            setActiveSelection(newSelection);
 
-        const tCombined = turf.combine(data.json);
-        const tConvex = turf.convex(tCombined, {concavity: 1});
-        
-        const boundary = L.geoJson(tConvex, {
-            style: {
-                color: "#0a1944",
-                weight: 2,
-                opacity: 1,
-                fillColor: "transparent",
-                fillOpacity: 0
-            },
-            fips: data.fips,
-            name: data.name,   
-        });
+        } else {
 
-        const subregions = L.geoJson(data.json, {
-            onEachFeature: (feature, layer) => {
+            newSelection.splice(selectionIndex, 1);
+            setActiveSelection(newSelection);
 
-                layer.setStyle({
-                    color: "#0a1944",
-                    weight: 1,
-                    opacity: .25,
-                    fillColor: "transparent",
-                    fillOpacity: 0
-                });
-                
-                layer.on('click', () => {
-                   
-                    if (activeSelection.length === 0) {
+        }
 
-                        setActiveSelection([feature]);
-
-                    } else {
-
-                        const newSelection = [...activeSelection];
-                        const selectionIndex = newSelection.findIndex(item => item.properties.fips === feature.properties.fips);
-
-                        if (selectionIndex === -1) {
-
-                            newSelection.push(feature);
-                            setActiveSelection(newSelection);
-
-                        } else {
-
-                            newSelection.splice(selectionIndex, 1);
-                            setActiveSelection(newSelection);
-
-                        }
-
-                    }
-                    
-                });
-
-            }
-
-        });
-    
-        // set region subregion shape layers
     }
+    
+    
 
     useEffect(() => {
 
@@ -91,68 +41,128 @@ const MapProcessor = () => {
 
     }, [activeRegions, activeSubregions, activeSelection]);
 
-    /**
-     * useEffect hook for processing activeRegions
-     */
+    
     useEffect(() => {
 
         // do nothing if activeRegions is empty
-        if (activeRegions.length === 0) return;
+        if (activeRegions.length === 0 && addedRegions.length === 0) return;
 
-        // for each active region,
-        //     - process region boundary shape
-        //     - process region subregion shapes
+        const getRegionData = (data, region) => {
+
+            // data is an object with the following properties:
+            //     - fips: string
+            //     - name: string
+            //     - data: object
+        
+            // set region boundary shape layer
+    
+            const tCombined = turf.combine(data);
+            const tConvex = turf.convex(tCombined, {concavity: 1});
+            
+            const boundary = L.geoJson(tConvex, {
+                style: {
+                    color: "#0a1944",
+                    weight: 2,
+                    opacity: 1,
+                    fillColor: "transparent",
+                    fillOpacity: 0
+                },
+                fips: region
+            });
+    
+            const subregions = L.geoJson(data, {
+                onEachFeature: (feature, layer) => {
+    
+                    layer.setStyle({
+                        color: "#0a1944",
+                        weight: 1,
+                        opacity: .25,
+                        fillColor: "transparent",
+                        fillOpacity: 0
+                    });
+                    
+                    layer.on('click', () => {
+
+                        const layerId = layer._leaflet_id;
+
+                        setSelectedSubregions
+                        
+                        
+                    });
+    
+                },
+                fips: region
+            });
+    
+            return {
+                boundary: boundary,
+                subregions: subregions
+            }
+        
+            // set region subregion shape layers
+        }
+
+        const addRegion = (region) => {
+
+            const apiRoute = admin.apiBase + '/state/' + region;
+    
+            fetch(apiRoute)
+            .then(response => response.json())
+            .then(data => {
+    
+                const regionData = getRegionData(data, region);
+                const boundary = regionData.boundary;
+                const subregions = regionData.subregions;
+    
+                boundary.addTo(mapRef.current);
+                subregions.addTo(mapRef.current);
+    
+            });
+    
+        }
+
+        const removeRegion = (region) => {
+
+            // remove map layer where fips === region
+            mapRef.current.eachLayer(layer => {
+                if (layer.options.fips === region) {
+                    mapRef.current.removeLayer(layer);
+                }
+            });
+    
+        }
+
         activeRegions.forEach(region => {
 
-            const regionFips = region.fips;
-            const apiRoute = afct_data.apiBase + '/state/' + regionFips;
+            // if region is not already on the map, add it
+            if (!addedRegions.current.has(region)) {
 
-            const response = fetch(apiRoute)
-            const data = response.json();
-            const metaData = {
-                fips: regionFips,
-                name: region.name,
-                json: data
+                addRegion(region);
+                addedRegions.current.add(region);
+
             }
 
-            handleRegionData(metaData);
+        });
+
+        // remove any regions that are no longer active
+        addedRegions.current.forEach(region => {
+
+            if (!activeRegions.includes(region)) {
+
+                removeRegion(region);
+                addedRegions.current.delete(region);
+
+            }
 
         });
 
     }, [activeRegions]);
 
-    /**
-     * useEffect hook for processing regionData
-     */
     useEffect(() => {
-
-        // do nothing if regionData is empty
-        if (Object.keys(regionData).length === 0) return;
-
-        // for each active region,
-        //     - process region boundary shape
-        //     - process region subregion shapes
-        activeRegions.forEach(region => {
-
-            const regionFips = region.fips;
-            const apiRoute = afct_data.apiBase + '/state/' + regionFips;
-
-            const response = fetch(apiRoute)
-            const data = response.json();
-
-            setRegionData(data);
-
-        });
-
-    }, [regionData]);
-
-    /**
-     * useEffect hook for processing activeSubregions
-     */
-
-    /**
-     * useEffect hook for processing activeSelection
-     */
+        
+        console.log('activeSelection useEffect', activeSelection)
+        
+    }, [activeSelection]);
 
     return null;
 

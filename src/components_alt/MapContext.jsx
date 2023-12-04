@@ -1,6 +1,7 @@
 import { 
     createContext,
-    useState
+    useState,
+    useRef,
 } from "@wordpress/element";
 
 export const MapContext = createContext();
@@ -11,6 +12,8 @@ export const MapProvider = ({ children }) => {
     const [activeSubregions, setActiveSubregions] = useState([]);
     const [activeSelection, setActiveSelection] = useState([]);
 
+    const mapRef = useRef();
+
 
     return (
         <MapContext.Provider value={{
@@ -19,7 +22,8 @@ export const MapProvider = ({ children }) => {
             activeSubregions,
             setActiveSubregions,
             activeSelection,
-            setActiveSelection
+            setActiveSelection,
+            mapRef,
         }}>
             {children}
         </MapContext.Provider>

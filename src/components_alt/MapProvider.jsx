@@ -8,3 +8,5 @@ function App() {
     </MapProvider>
   );
 }
+
+export default App;

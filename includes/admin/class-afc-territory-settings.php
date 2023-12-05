@@ -104,7 +104,34 @@ class AFCT_Settings {
             )
         );
 
+        register_rest_route(
+            'afct/v1',
+            '/save',
+            array(
+                'methods' => 'POST',
+                'callback' => array( $this, 'save_map_settings' ),
+            )
+        );
+
     }
+
+    public function save_map_settings( $request ) {
+
+        update_option('_afct_raw_save_data', $request);
+
+        /*
+        foreach( $data as $key => $value ) {
+
+            update_option( $key, $value );
+
+        }
+        */
+
+        return rest_ensure_response( $request );
+
+    }
+
+    
 
     public function rest_get_state( $fips ) {
 

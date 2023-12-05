@@ -1,0 +1,114 @@
+{
+    "1": {
+        "label": "La Vista, Nebraska",
+        "style": {
+            "color": "#ff5733",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "2": {
+        "label": "Omaha, Nebraska",
+        "style": {
+            "color": "#33ff57",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "3": {
+        "label": "Lincoln, Nebraska",
+        "style": {
+            "color": "#3366ff",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "4": {
+        "label": "Kearney, Nebraska",
+        "style": {
+            "color": "#ff33d1",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "5": {
+        "label": "Grand Island, Nebraska",
+        "style": {
+            "color": "#ffd133",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "6": {
+        "label": "Cedar Rapids, Iowa",
+        "style": {
+            "color": "#33ffd1",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "7": {
+        "label": "Des Moines, Iowa",
+        "style": {
+            "color": "#ff33b7",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "8": {
+        "label": "Sioux City, Iowa",
+        "style": {
+            "color": "#33b7ff",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "9": {
+        "label": "Sioux Falls, South Dakota",
+        "style": {
+            "color": "#b733ff",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "10": {
+        "label": "Rochester, Minnesota",
+        "style": {
+            "color": "#ffb733",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "11": {
+        "label": "Madison, Wisconsin",
+        "style": {
+            "color": "#b7ff33",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "12": {
+        "label": "Kansas City, Missouri",
+        "style": {
+            "color": "#ff3366",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "13": {
+        "label": "Fargo, North Dakota",
+        "style": {
+            "color": "#6633ff",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    },
+    "14": {
+        "label": "Rapid City, South Dakota",
+        "style": {
+            "color": "#ff9393",
+            "weight": 2,
+            "opacity": 0.65
+        }
+    }
+}

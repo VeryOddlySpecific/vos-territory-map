@@ -8,6 +8,8 @@ import {
 
 import RegionData from '../assets/fips.json';
 
+import SaveButton from './SaveButton';
+
 import { MapContext } from './MapContext';
 import { useContext } from '@wordpress/element';
 
@@ -30,11 +32,12 @@ const RegionSelector = () => {
     }
 
     return (
-
+        <>
         <Card>
 
             <CardHeader>
                 <Heading>Region Selector</Heading>
+                <SaveButton />
             </CardHeader>
 
             <CardBody>
@@ -55,6 +58,7 @@ const RegionSelector = () => {
             </CardBody>
 
         </Card>
+        </>
 
     )
 

@@ -12,6 +12,61 @@ const MapProcessor = () => {
     const addedRegions = useRef(new Set());
     const selectedSubregions = useRef(new Set());
 
+    const getRegionData = (data, region) => {
+
+        // data is an object with the following properties:
+        //     - fips: string
+        //     - name: string
+        //     - data: object
+    
+        // set region boundary shape layer
+
+        const tCombined = turf.combine(data);
+        const tConvex = turf.convex(tCombined, {concavity: 1});
+        
+        const boundary = L.geoJson(tConvex, {
+            style: {
+                color: "#0a1944",
+                weight: 2,
+                opacity: 1,
+                fillColor: "transparent",
+                fillOpacity: 0
+            },
+            fips: region
+        });
+
+        const subregions = L.geoJson(data, {
+            onEachFeature: (feature, layer) => {
+
+                layer.setStyle({
+                    color: "#0a1944",
+                    weight: 1,
+                    opacity: .25,
+                    fillColor: "transparent",
+                    fillOpacity: 0
+                });
+
+                // give layer a type that is subregion
+                layer.type = 'subregion';
+
+                layer.on('click', (e) => {
+
+                    console.log('layer', layer);
+
+                });
+
+            },
+            fips: region
+        });
+
+        return {
+            boundary: boundary,
+            subregions: subregions
+        }
+    
+        // set region subregion shape layers
+    }
+
     const updateActiveSelection = (layerId) => {
 
         const newSelection = [...activeSelection];
@@ -47,60 +102,7 @@ const MapProcessor = () => {
         // do nothing if activeRegions is empty
         if (activeRegions.length === 0 && addedRegions.length === 0) return;
 
-        const getRegionData = (data, region) => {
-
-            // data is an object with the following properties:
-            //     - fips: string
-            //     - name: string
-            //     - data: object
         
-            // set region boundary shape layer
-    
-            const tCombined = turf.combine(data);
-            const tConvex = turf.convex(tCombined, {concavity: 1});
-            
-            const boundary = L.geoJson(tConvex, {
-                style: {
-                    color: "#0a1944",
-                    weight: 2,
-                    opacity: 1,
-                    fillColor: "transparent",
-                    fillOpacity: 0
-                },
-                fips: region
-            });
-    
-            const subregions = L.geoJson(data, {
-                onEachFeature: (feature, layer) => {
-    
-                    layer.setStyle({
-                        color: "#0a1944",
-                        weight: 1,
-                        opacity: .25,
-                        fillColor: "transparent",
-                        fillOpacity: 0
-                    });
-                    
-                    layer.on('click', () => {
-
-                        const layerId = layer._leaflet_id;
-
-                        setSelectedSubregions
-                        
-                        
-                    });
-    
-                },
-                fips: region
-            });
-    
-            return {
-                boundary: boundary,
-                subregions: subregions
-            }
-        
-            // set region subregion shape layers
-        }
 
         const addRegion = (region) => {
 

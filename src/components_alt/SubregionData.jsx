@@ -55,31 +55,29 @@ const SubregionData = () => {
     }
 
     return (
-
+        <>
         <Card>
 
             <CardHeader>
                 <Heading level={3}>Subregion Data</Heading>
-                <Button
-                    variant="secondary"
-                    disabled={ activeSelection.length === 0 }
-                    label="Clear selection"
-                    onClick={ () => {
-
-                        setActiveSelection([]);
-
-                    }}
-                />
+                <Heading level={5}>Selected Counties:</Heading>
                 {
-                    activeSelection.length ?
-                    (
+                    activeSelection.length > 0 ? (
+                        
                         activeSelection.map( subregion => {
+                            
                             return (
-                                <Heading level={5}>{subregion}</Heading>
+                                <Heading 
+                                    level={6}
+                                    key={subregion.feature.properties.GEOID}
+                                    >{subregion.feature.properties.Name} County
+                                </Heading>
                             )
+                        
                         })
+                        
                     ) : (
-                        <Heading level={5}>No subregions selected</Heading>
+                        console.log("activeSelection is empty")
                     )
                 }
 
@@ -162,7 +160,7 @@ const SubregionData = () => {
             </CardBody>
 
         </Card>            
-
+        </>
     )
 
 }

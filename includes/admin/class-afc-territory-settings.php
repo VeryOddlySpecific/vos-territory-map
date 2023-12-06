@@ -117,7 +117,11 @@ class AFCT_Settings {
 
     public function save_map_settings( $request ) {
 
-        update_option('_afct_raw_save_data', $request);
+        $payload    = $request->get_json_params();
+        $key        = $payload['id'];
+        $data       = $payload['data'];
+
+        update_option( $key, $data );
 
         /*
         foreach( $data as $key => $value ) {
@@ -127,7 +131,7 @@ class AFCT_Settings {
         }
         */
 
-        return rest_ensure_response( $request );
+        return rest_ensure_response( array( 'success' => true, 'key' => $key ) );
 
     }
 

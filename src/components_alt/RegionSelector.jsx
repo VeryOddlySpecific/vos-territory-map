@@ -21,9 +21,13 @@ const RegionSelector = () => {
 
         if (activeRegions.includes(region)) {
 
+            //console.log("region unchecked:", region);
+
             setActiveRegions(activeRegions.filter(item => item !== region));
 
         } else {
+
+            //console.log("region checked:", region);
 
             setActiveRegions([...activeRegions, region]);
 

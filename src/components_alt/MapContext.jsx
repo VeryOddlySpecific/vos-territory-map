@@ -11,6 +11,7 @@ export const MapProvider = ({ children }) => {
     const [activeRegions, setActiveRegions] = useState([]);
     const [activeSubregions, setActiveSubregions] = useState([]);
     const [activeSelection, setActiveSelection] = useState([]);
+    const [mapLayers, setMapLayers] = useState([]);
 
     const mapRef = useRef();
 
@@ -23,6 +24,8 @@ export const MapProvider = ({ children }) => {
             setActiveSubregions,
             activeSelection,
             setActiveSelection,
+            mapLayers,
+            setMapLayers,
             mapRef,
         }}>
             {children}

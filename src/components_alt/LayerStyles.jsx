@@ -19,16 +19,29 @@ const LayerStyles = () => {
 
         }
 
-        //console.log("branches", branches);
         activeSubregions.forEach(subregion => {
 
             if (subregion.branch) {
 
-                const branch = branchesAlt[subregion.branch];
+                console.log("subregion", subregion)
+                console.log("subregion.branch", subregion.branch)
+                console.log("branchesAlt", branchesAlt)
+
+                const branch = branchesAlt.find(branchAlt => Number(branchAlt.value) === Number(subregion.branch));
+
+                console.log("branch", branch);
 
                 const style = branch.style;
 
                 subregion.setStyle(style);
+
+                /*
+                const branch = branchesAlt[subregion.branch];
+                console.log("branch", branch);
+                const style = branch.style;
+
+                subregion.setStyle(style);
+                */
             }
 
         });
@@ -36,8 +49,7 @@ const LayerStyles = () => {
     }, [activeSubregions])
 
     useEffect(() => {
-        
-        // when active selection is cleared, reset all inactive subregion styles
+
         if (activeSelection.count === 0) {
 
             activeSubregions.forEach(subregion => {
@@ -45,6 +57,8 @@ const LayerStyles = () => {
                 if (subregion.branch) {
 
                     const branch = branchesAlt[subregion.branch];
+
+                    
 
                     const style = branch.style;
 

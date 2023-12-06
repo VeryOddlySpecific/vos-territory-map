@@ -13,16 +13,42 @@ const MapProcessor = () => {
     // map
     // activeRegions
     // selectedSubregion
-    const { mapRef, activeRegions, activeSelection, setActiveSelection } = useContext(MapContext);
+    const { 
+        mapRef, 
+        activeRegions, 
+        activeSelection, 
+        setActiveSelection,
+        mapLayers,
+        setMapLayers
+    } = useContext(MapContext);
 
     const [ region, setRegion ] = useState(null);
     const [ subregion, setSubregion ] = useState(null);
 
+    const addLayersToMap = (...layers) => {
+
+        layers.forEach(layer => {
+
+            const layerIsInMapLayers = mapLayers.includes(layer.options._afct_id);
+
+            if (!layerIsInMapLayers) {
+
+                mapRef.current.addLayer(layer);
+                setMapLayers((prevMapLayers) => [...prevMapLayers, layer.options._afct_id]);
+
+            }
+
+        });
+
+    }
+
     useEffect(() => {
 
+        //console.log("activeRegions", activeRegions);
         //console.log("activeSelection", activeSelection);
+        //console.log("mapLayers", mapLayers);
 
-    }, [activeRegions, activeSelection]);
+    }, [activeRegions, activeSelection, mapLayers]);
 
     useEffect(() => {
 
@@ -46,6 +72,89 @@ const MapProcessor = () => {
 
         }
 
+        const mapLayersNotActive = [];
+
+        mapLayers.forEach(layer => {
+
+            const fips = layer.split('-')[1];
+
+            const mapLayerIsActive = activeRegions.includes(fips);
+
+            if (!mapLayerIsActive) {
+
+                mapLayersNotActive.push(layer);
+
+                mapRef.current.eachLayer(mapLayer => {
+
+                    if (mapLayer.options._afct_id === layer) {
+    
+                        mapRef.current.removeLayer(mapLayer);
+    
+                        setMapLayers(mapLayers.filter(fLayer => fLayer !== layer));
+    
+                    }
+    
+                });
+
+            }
+
+        });
+
+        /*
+        mapLayersNotActive.forEach(layerNotActive => {
+
+            mapRef.current.eachLayer(mapLayer => {
+
+                if (mapLayer.options._afct_id === layerNotActive) {
+
+                    mapRef.current.removeLayer(mapLayer);
+
+                    setMapLayers(mapLayers.filter(layer => layer !== layerNotActive));
+
+                }
+
+            });
+
+        });
+        */
+
+
+
+        // check for mapLayers with _afct_id of 'shape-' + region
+        // that are not in activeRegions
+        // if any are found, remove that layer
+        // and layer with _afct_id of 'subregions-' + region (if it exists)
+
+        /*
+        mapLayers.forEach(layer => {
+
+            // activeRegions has fips codes as strings
+            // mapLayers has layer ids as strings in formats:
+            //    'shape-' + fips
+            //    'subregions-' + fips
+
+            // therefore, this layer is either:
+            //    'shape-' + fips
+            //    'subregions-' + fips
+
+            // if fips is not in activeRegions
+            // remove this layer from map
+
+        });
+        */
+
+        /*
+        mapRef.current.eachLayer(layer => {
+
+            // if layer._afct_id is not in mapLayers
+            // remove this layer from map
+
+            console.log("layer in mapRef.current", layer);
+
+        })
+        */
+                
+
     }, [activeRegions]);
 
     useEffect(() => {
@@ -57,7 +166,7 @@ const MapProcessor = () => {
 
             const shape = turf.convex(turf.combine(json), {concavity: 1});
             
-            L.geoJson(shape, {
+            const shapeLayer = L.geoJson(shape, {
                 style: {
                     color: '#0a1944',
                     weight: 2,
@@ -65,10 +174,10 @@ const MapProcessor = () => {
                     fillColor: 'transparent',
                     fillOpacity: 0,
                 },
-                fips: fips,
-            }).addTo(mapRef.current);
+                _afct_id: 'shape-' + fips
+            });
 
-            L.geoJson(json, {
+            const subregionsLayer = L.geoJson(json, {
                 onEachFeature: (feature, layer) => {
 
                     layer.setStyle({
@@ -85,8 +194,11 @@ const MapProcessor = () => {
 
                     })
 
-                }
-            }).addTo(mapRef.current);
+                },
+                _afct_id: 'subregion-' + fips
+            })
+
+            addLayersToMap(shapeLayer, subregionsLayer);
 
         }
         
@@ -96,9 +208,6 @@ const MapProcessor = () => {
 
         if (subregion) {
 
-            //console.log("subregion", subregion);
-
-            // add subregion to activeSelection
             if (!activeSelection.includes(subregion)) {
 
                 subregion.setStyle({

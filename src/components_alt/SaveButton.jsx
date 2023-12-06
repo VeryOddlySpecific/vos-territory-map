@@ -24,54 +24,9 @@ const SaveButton = () => {
         console.log("activeSubregions:", activeSubregions);
         console.log("saveApiRoute:", saveApiRoute);
 
-        const subregionsArray = [];
-
-        activeSubregions.forEach((subregion) => {
-
-            const subregionData = {
-                geoid: subregion.feature.properties.GEOID,
-                branch: subregion.branch
-            };
-
-            subregionsArray.push(subregionData);
-
-        });
-
-        //setDataToSave(JSON.stringify({ activeRegions, subregionsArray }));
+        
         setRegionsToSave(activeRegions);
-        setSubregionsToSave(subregionsArray);
-
-        /*
-        const bodyToSave = JSON.stringify({ activeRegions, subregionsToSave });
-
-        console.log("bodyToSave:", bodyToSave);
-
-        try {
-
-            const response = await fetch(saveApiRoute, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: bodyToSave,
-            });
-
-            if (!response.ok) {
-
-                console.error('Error saving map in try:', response);
-
-            }
-
-            const responseData = await response.json();
-
-            console.log('Save successful:', responseData);
-
-        } catch (error) {
-
-            console.error('Error saving map:', error);
-
-        }
-        */
+        setSubregionsToSave(activeSubregions);
 
     };
 
@@ -115,7 +70,7 @@ const SaveButton = () => {
 
         const bodyToSave = JSON.stringify({subregionsToSave});
 
-        console.log("subregions bodyToSave:", bodyToSave);
+        //console.log("subregions bodyToSave:", bodyToSave);
 
         saveData(bodyToSave, '_afct_active_subregions');
 
@@ -125,22 +80,11 @@ const SaveButton = () => {
 
         var bodyToSave = JSON.stringify({activeRegions});
 
-        console.log("regions bodyToSave:", bodyToSave);
+        //console.log("regions bodyToSave:", bodyToSave);
 
         saveData(bodyToSave, '_afct_active_regions');
 
     }, [regionsToSave]);
-    
-
-    /*
-    useEffect(() => {
-
-        console.log("dataToSave:", dataToSave);
-
-        saveData(dataToSave);
-
-    }, [dataToSave]);
-    */
 
     return (
 

@@ -14,13 +14,6 @@ const MapProcessor = () => {
 
     const getRegionData = (data, region) => {
 
-        // data is an object with the following properties:
-        //     - fips: string
-        //     - name: string
-        //     - data: object
-    
-        // set region boundary shape layer
-
         const tCombined = turf.combine(data);
         const tConvex = turf.convex(tCombined, {concavity: 1});
         

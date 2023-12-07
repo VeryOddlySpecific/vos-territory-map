@@ -58,9 +58,7 @@ class AFCT_Settings {
 
     public function render_territory_selection() {
 
-        $territory_container = '<div id="state-selector"></div>';
-        $territory_container .= '<div id="county-card"></div>';
-        $territory_container .= '<div id="afc-territory-map" style="height:600px;"></div>';
+        $territory_container = '<div id="afc-territory-map"></div>';
 
         echo $territory_container;
         
@@ -68,14 +66,18 @@ class AFCT_Settings {
 
     public function render_settings_page() {
 
-        $form = '<form method="post" id="afc-territory-settings" action="' . admin_url( 'admin-post.php' ) . '">';
+        //$form = '<form method="post" id="afc-territory-settings" action="' . admin_url( 'admin-post.php' ) . '">';
         // <input type="hidden" id="action" name="action" value="save_afct_settings" />
-        $form .= wp_nonce_field( 'save_afct_settings', 'action', true, false );
-        do_settings_sections( 'afc-territory-map' );
-        submit_button( 'Save Settings' );
-        $form .= '</form>';
+        //$form .= wp_nonce_field( 'save_afct_settings', 'action', true, false );
+        //do_settings_sections( 'afc-territory-map' );
+        //submit_button( 'Save Settings' );
+        //$form .= '</form>';
 
-        echo $form;
+        //echo $form;
+
+        $territory_container = '<div id="afc-territory-map"></div>';
+
+        echo $territory_container;
 
     }
 

@@ -14,19 +14,39 @@ const SaveButton = () => {
     const [subregionsToSave, setSubregionsToSave] = useState([]);
     const [regionsToSave, setRegionsToSave] = useState([]);
 
-    const [dataToSave, setDataToSave] = useState([]);
+    const [runItems, setRunItems] = useState([]);
 
     const saveApiRoute = admin.apiBase + '/save';
 
     const handleClick = async () => {
 
-        console.log("activeRegions:", activeRegions);
-        console.log("activeSubregions:", activeSubregions);
-        console.log("saveApiRoute:", saveApiRoute);
+        //console.log("activeRegions:", activeRegions);
+        //console.log("activeSubregions:", activeSubregions);
+        //console.log("saveApiRoute:", saveApiRoute);
+
+        setRunItems(['regions', 'subregions']);
+
+        const subregions = [];
+
+        activeSubregions.forEach(subregion => {
+
+            console.log("subregion:", subregion);
+
+            const subregionData = {
+                _afct_id: subregion.options._afct_id,
+                branch: subregion.branch,
+                geoid: subregion.feature.properties.GEOID
+            }
+
+            subregions.push(subregionData);
+
+            setSubregionsToSave(subregions);
+
+        });
 
         
         setRegionsToSave(activeRegions);
-        setSubregionsToSave(activeSubregions);
+        //setSubregionsToSave(activeSubregions);
 
     };
 
@@ -68,21 +88,42 @@ const SaveButton = () => {
     
     useEffect(() => {
 
-        const bodyToSave = JSON.stringify({subregionsToSave});
+        if (runItems.includes('subregions')) {
 
-        //console.log("subregions bodyToSave:", bodyToSave);
+            console.log("subregionsToSave:", subregionsToSave);
 
-        saveData(bodyToSave, '_afct_active_subregions');
+            const bodyToSave = JSON.stringify(subregionsToSave);
+
+            //console.log("subregions bodyToSave:", bodyToSave);
+
+            saveData(bodyToSave, '_afct_active_subregions');
+
+            // remove 'subregions' from runItems
+            setRunItems(runItems.filter(item => item !== 'subregions'));
+
+            return;
+
+        }
 
     }, [subregionsToSave]);
 
     useEffect(() => {
 
-        var bodyToSave = JSON.stringify({activeRegions});
+        if (runItems.includes('regions')) {
 
-        //console.log("regions bodyToSave:", bodyToSave);
+            console.log("regionsToSave:", regionsToSave);
 
-        saveData(bodyToSave, '_afct_active_regions');
+            var bodyToSave = JSON.stringify(activeRegions);
+
+            //console.log("regions bodyToSave:", bodyToSave);
+
+            saveData(bodyToSave, '_afct_active_regions');
+
+            setRunItems(runItems.filter(item => item !== 'regions'));
+
+            return;
+
+        }
 
     }, [regionsToSave]);
 

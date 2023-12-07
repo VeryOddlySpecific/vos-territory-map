@@ -4,6 +4,7 @@ import {
     CardBody,
     ToggleControl,
     __experimentalHeading as Heading,
+    __experimentalGrid as Grid,
 } from '@wordpress/components';
 
 import RegionData from '../assets/fips.json';
@@ -45,8 +46,13 @@ const RegionSelector = () => {
             </CardHeader>
 
             <CardBody>
+                <Grid
+                    columns={6}
+                    gap={2}
+                >
                     
-                    {RegionData.map((region) => {
+                    {
+                    RegionData.map((region) => {
     
                         return (
                             <ToggleControl
@@ -57,7 +63,9 @@ const RegionSelector = () => {
                             />
                         )
     
-                    })}
+                    })
+                    }
+                </Grid>
 
             </CardBody>
 

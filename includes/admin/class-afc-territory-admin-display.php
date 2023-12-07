@@ -26,8 +26,8 @@ class AFCT_Admin_Display {
 
                     $obj = array(
                         'ajax_url' => admin_url( 'admin-ajax.php' ),
-                        'states' => get_option( '_afct_active_states' ),
-                        'counties' => get_option( '_afct_active_counties' ),
+                        'regions' => get_option( '_afct_active_regions' ),
+                        'subregions' => get_option( '_afct_active_subregions' ),
                         'apiBase' => rest_url( 'afct/v1' ),
                     );
 

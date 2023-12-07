@@ -6,8 +6,11 @@ import {
     useContext,
 } from "@wordpress/element"
 
+import branchesAlt from "../assets/branchesAlt.json";
 
 const MapProcessor = () => {
+
+    const savedSubregions = JSON.parse(admin.subregions);
 
     // context properties needed
     // map
@@ -16,14 +19,24 @@ const MapProcessor = () => {
     const { 
         mapRef, 
         activeRegions, 
+        setActiveRegions,
+        activeSubregions,
+        setActiveSubregions,
         activeSelection, 
         setActiveSelection,
         mapLayers,
-        setMapLayers
+        setMapLayers,
+        legendKeyClicked,
+        setLegendKeyClicked,
     } = useContext(MapContext);
 
     const [ region, setRegion ] = useState(null);
     const [ subregion, setSubregion ] = useState(null);
+    const [ isClicked, setIsClicked ] = useState(false);
+
+    const [ init, setInit ] = useState(true);
+
+    
 
     const addLayersToMap = (...layers) => {
 
@@ -41,6 +54,36 @@ const MapProcessor = () => {
         });
 
     }
+
+    // to add saved regions and subregions to map, ensuring their styles if needed
+    useEffect(() => {
+
+        console.log("saved regions", activeRegions)
+        console.log("saved subregions", savedSubregions)
+
+        if (activeRegions.length) {
+
+            activeRegions.forEach(region => {
+        
+                const apiRoute = admin.apiBase + '/state/' + region;
+    
+                fetch(apiRoute)
+                .then(response => response.json())
+                .then(data => {
+    
+                    setRegion([data, region]);
+    
+                });
+                
+            });
+
+        }
+
+        setInit(false);
+        
+    }, []);
+
+    
 
     useEffect(() => {
 
@@ -99,60 +142,6 @@ const MapProcessor = () => {
             }
 
         });
-
-        /*
-        mapLayersNotActive.forEach(layerNotActive => {
-
-            mapRef.current.eachLayer(mapLayer => {
-
-                if (mapLayer.options._afct_id === layerNotActive) {
-
-                    mapRef.current.removeLayer(mapLayer);
-
-                    setMapLayers(mapLayers.filter(layer => layer !== layerNotActive));
-
-                }
-
-            });
-
-        });
-        */
-
-
-
-        // check for mapLayers with _afct_id of 'shape-' + region
-        // that are not in activeRegions
-        // if any are found, remove that layer
-        // and layer with _afct_id of 'subregions-' + region (if it exists)
-
-        /*
-        mapLayers.forEach(layer => {
-
-            // activeRegions has fips codes as strings
-            // mapLayers has layer ids as strings in formats:
-            //    'shape-' + fips
-            //    'subregions-' + fips
-
-            // therefore, this layer is either:
-            //    'shape-' + fips
-            //    'subregions-' + fips
-
-            // if fips is not in activeRegions
-            // remove this layer from map
-
-        });
-        */
-
-        /*
-        mapRef.current.eachLayer(layer => {
-
-            // if layer._afct_id is not in mapLayers
-            // remove this layer from map
-
-            console.log("layer in mapRef.current", layer);
-
-        })
-        */
                 
 
     }, [activeRegions]);
@@ -177,26 +166,110 @@ const MapProcessor = () => {
                 _afct_id: 'shape-' + fips
             });
 
+            /********* */
+
             const subregionsLayer = L.geoJson(json, {
                 onEachFeature: (feature, layer) => {
 
-                    layer.setStyle({
-                        color: '#0a1944',
-                        weight: 1,
-                        opacity: .25,
-                        fillColor: '#fff',
-                        fillOpacity: 0.25,
+                    const geoid = feature.properties.GEOID;
+
+                    const featureIsActive = savedSubregions.some(subregion => Number(subregion.geoid) === Number(geoid));
+                    
+
+                    if (featureIsActive) {
+
+                        const activeSubregionBranch = savedSubregions.find(subregion => Number(subregion.geoid) === Number(geoid))?.branch;
+
+                        const branchStyle = branchesAlt[activeSubregionBranch].style;
+
+                        layer.setStyle(branchStyle);
+
+                        layer.branch = activeSubregionBranch;
+
+                        setActiveSubregions((prevActiveSubregions) => [...prevActiveSubregions, layer]);
+                        
+                    } else {
+
+                        layer.setStyle({
+                            color: '#0a1944',
+                            weight: 1,
+                            opacity: .25,
+                            fillColor: '#fff',
+                            fillOpacity: 0.25,
+                        });
+
+                    }
+
+                    const layerCenter = turf.centerOfMass(feature);
+                    const centroidCoords = layerCenter.geometry.coordinates;
+
+                    var hoverTooltip = L.tooltip(centroidCoords, {
+                        content: feature.properties.Name + ' County',
+                        permanent: false,
+                        opacity: 1,
+                        //className: 'tooltip-max-' + absWidth + '-' + absHeight,
+                        backgroundColor: 'transparent',
+                        direction: 'center',
+                    })
+
+                    layer.bindTooltip(hoverTooltip);
+
+                    mapRef.current.on('zoom', () => {
+
+                        const zoom = mapRef.current.getZoom();
+
+                        const layerBounds = layer.getBounds();
+
+                        const pxWidthOfLayer = mapRef.current.latLngToLayerPoint(layerBounds.getNorthEast()).x - mapRef.current.latLngToLayerPoint(layerBounds.getSouthWest()).x;
+                        const pxHeightOfLayer = mapRef.current.latLngToLayerPoint(layerBounds.getNorthEast()).y - mapRef.current.latLngToLayerPoint(layerBounds.getSouthWest()).y;
+                    
+                        const absWidth = Math.abs(pxWidthOfLayer);
+                        const absHeight = Math.abs(pxHeightOfLayer);
+
+                        var permTooltip = L.tooltip(centroidCoords, {
+                            content: feature.properties.Name + ' County',
+                            permanent: true,
+                            opacity: 1,
+                            className: 'tooltip-max-' + absWidth + '-' + absHeight,
+                            backgroundColor: 'transparent',
+                            direction: 'center',
+                        })
+
+                        var hoverTooltip = L.tooltip(centroidCoords, {
+                            content: feature.properties.Name + ' County',
+                            permanent: false,
+                            opacity: 1,
+                            className: 'tooltip-max-' + absWidth + '-' + absHeight,
+                            backgroundColor: 'transparent',
+                            direction: 'center',
+                        })
+
+                        if (zoom > 6) {
+
+                            layer.unbindTooltip();
+                            layer.bindTooltip(permTooltip);
+
+                        } else {
+                                
+                            layer.unbindTooltip();
+                            layer.bindTooltip(hoverTooltip);
+
+                        }
+
                     });
 
                     layer.on('click', (e) => {
 
                         setSubregion(e.target);
+                        setIsClicked(true);
 
                     })
 
                 },
                 _afct_id: 'subregion-' + fips
             })
+
+            
 
             addLayersToMap(shapeLayer, subregionsLayer);
 
@@ -206,13 +279,13 @@ const MapProcessor = () => {
 
     useEffect(() => {
 
-        if (subregion) {
+        if (subregion && isClicked) {
 
             if (!activeSelection.includes(subregion)) {
 
                 subregion.setStyle({
                     opacity: 1,
-                    fillOpacity: .5
+                    fillOpacity: 1,
                 })
 
                 setActiveSelection([...activeSelection, subregion]);
@@ -228,11 +301,34 @@ const MapProcessor = () => {
 
             }
 
+            setIsClicked(false);
+
         }
         
         
         
-    }, [subregion]);
+    }, [subregion, isClicked]);
+
+    useEffect(() => {
+
+        console.log("activeSubregions", activeSubregions)
+
+    }, [activeSubregions])
+
+    useEffect(() => {
+        
+        if (legendKeyClicked !== null && activeSubregions.length) {
+
+            activeSubregions.forEach(subregion => {
+
+                setSubregion(subregion);
+                setIsClicked(true);
+
+            });
+
+        }
+        
+    }, [legendKeyClicked])
 
 }
 

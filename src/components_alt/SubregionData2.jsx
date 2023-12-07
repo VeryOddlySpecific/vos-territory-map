@@ -10,6 +10,7 @@ import {
 } from '@wordpress/components';
 
 import { MapContext } from './MapContext';
+
 import { 
     useContext,
     useState,
@@ -17,8 +18,28 @@ import {
 } from '@wordpress/element';
 
 import branches from '../assets/branches.json';
+import branchesAlt from '../assets/branchesAlt.json';
 
 const SubregionData = () => {
+
+    const getBranchOptions = () => {
+        
+        const branchOptions = [];
+
+        const branchKeys = Object.keys(branchesAlt);
+
+        branchKeys.forEach(key => {
+
+            branchOptions.push({
+                label: branchesAlt[key].label,
+                value: key,
+            });
+    
+        });
+       
+        return branchOptions;
+
+    }
 
     const activeSelectionIsActive = () => {
 
@@ -55,14 +76,16 @@ const SubregionData = () => {
     }
 
     const { 
+        mapRef,
         activeSelection, 
         setActiveSelection,
         activeSubregions,
         setActiveSubregions,
     } = useContext(MapContext);
 
-    const [active, setActive] = useState(activeSelectionIsActive());
+    const [active, setActive] = useState(false);
     const [branchSelection, setBranchSelection] = useState(activeSelectionBranch());
+    const [branchOptions, setBranchOptions] = useState(getBranchOptions());
 
     const handleToggle = () => {
 
@@ -85,10 +108,30 @@ const SubregionData = () => {
 
     const handleBranchSelect = (val) => {
 
-        // for all activeSelection, set branch to val
+        // on branch select:
+        //     set branch of all activeSelection to val
+        //     set style of all activeSelection to style of branch
+        //     add all activeSelection to activeSubregions
+        // clear activeSelection
+        // reset component state
+
+        const styleToSet = branchesAlt[val].style;
+
+        console.log("styleToSet: ", styleToSet);
+
+        // set branch of all activeSelection to val
         const updatedActiveSelection = activeSelection.map(subregion => {
+
             subregion.branch = val;
+
             return subregion;
+
+        });
+
+        updatedActiveSelection.forEach(subregion => {
+
+            subregion.setStyle(styleToSet);
+
         });
 
         // update activeSubregions, adding any subregions that are in activeSelection
@@ -98,6 +141,12 @@ const SubregionData = () => {
         setActiveSubregions(updatedActiveSubregions);
 
         setBranchSelection(val);
+
+        // set activeRegions
+        // set activeSubregions
+        // reset activeSelection
+
+        setActiveSelection([])
 
     }
 
@@ -139,6 +188,25 @@ const SubregionData = () => {
 
     }
 
+    const handlePrint = () => {
+
+        var printWindow = window.open('');
+
+        const svgToPrint = mapRef.current.getPane('overlayPane').children[0].outerHTML;
+
+        console.log("svgToPrint: ", svgToPrint)
+
+        printWindow.document.open();
+        printWindow.document.write('<html><head></head><body>');
+        printWindow.document.write(svgToPrint);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        
+        printWindow.print();
+        printWindow.close();
+
+    }
+
     useEffect(() => {
 
         if (activeSelection.length == 0) {
@@ -147,7 +215,50 @@ const SubregionData = () => {
 
         }
 
+        /*
+        activeSubregions.forEach(subregion => {
+
+            console.log("subregion to check for branch: ", subregion);
+
+            const subregionBranch = subregion.branch;
+
+            if (subregionBranch) {
+                    
+                    const styleToSet = branchesAlt[subregionBranch].style;
+    
+                    subregion.setStyle(styleToSet);
+
+            }
+
+        })
+        */
+
     }, [activeSelection, activeSubregions]);
+
+    useEffect(() => {
+
+        console.log("activeSelection: ", activeSelection);
+        console.log("activeSubregions: ", activeSubregions);
+        
+        const allSelectedAreActive = activeSelection.every(subregion => activeSubregions.includes(subregion));
+
+        if (allSelectedAreActive) {
+
+            setActive(true);
+
+        }
+
+        const allActiveSameBranch = activeSelection.every(subregion => subregion.branch === activeSelection[0].branch);
+
+        if (activeSelection.length && allActiveSameBranch) {
+
+            console.log("allActiveSameBranch: ", allActiveSameBranch);
+
+            setBranchSelection(activeSubregions[0].branch);
+
+        }
+        
+    }, [activeSelection])
 
     return (
 
@@ -156,10 +267,14 @@ const SubregionData = () => {
             <CardHeader>
 
                 <Heading level={3}>Subregion Data</Heading>
-                <Button
-                    isSecondary
+                <Button 
+                    variant="primary"
                     onClick={handleClearSelection}
                 >Clear Selection</Button>
+                <Button
+                    variant="primary"
+                    onClick={handlePrint}
+                >Print Map</Button>
 
             </CardHeader>
 
@@ -167,37 +282,46 @@ const SubregionData = () => {
 
                 <ToggleControl
                     label="Activate counties"
-                    checked={ checkToggleActive }
+                    checked={ active }
                     onChange={ handleToggle }
                 />
                 <SelectControl
                     label="Select branch"
                     disabled={ !active }
-                    options={ branches }
+                    options={ branchOptions }
                     value={ branchSelection }
                     onChange={ handleBranchSelect }
                 />
                 <CardDivider />
                 <Heading level={4}>Selected Counties:</Heading>
+                <ul>
                 {
+
                     activeSelection.length > 0 ? (
                         
                         activeSelection.map( subregion => {
                             
                             return (
+                                <li>
                                 <Heading 
-                                    level={6}
+                                    level={5}
                                     key={subregion.feature.properties.GEOID}
                                     >{subregion.feature.properties.Name} County
                                 </Heading>
+                                </li>
                             )
                         
                         })
                         
+                        
                     ) : (
                         console.log("activeSelection is empty")
                     )
+                    
                 }
+                </ul>
+
+                
 
             </CardBody>
 

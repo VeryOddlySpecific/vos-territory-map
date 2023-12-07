@@ -7,6 +7,20 @@
         "ver": "1.7.1"
     },
     {
+        "type": "style",
+        "handle": "afct-tooltip-css",
+        "src": "/includes/styles/tooltip.css",
+        "deps": [],
+        "ver": "1.0.0"
+    },
+    {
+        "type": "style",
+        "handle": "afct-base-css",
+        "src": "/includes/styles/base.css",
+        "deps": [],
+        "ver": "1.0.0"
+    },
+    {
         "type": "script",
         "handle": "leaflet-js",
         "src": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -29,10 +43,12 @@
         "deps": [
             "wp-components",
             "wp-element",
-            "leaflet-js"
+            "leaflet-js",
+            "turf-js"
         ],
         "ver": "1.0.0",
         "in_footer": true,
         "localize": true
     }
+    
 ]

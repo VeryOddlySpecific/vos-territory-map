@@ -1,9 +1,14 @@
 import { 
     useEffect,
-    useContext
+    useContext,
+    createRoot
 } from '@wordpress/element';
 
+import MapLegend from './MapLegend';
+
 import { MapContext } from './MapContext';
+
+import branchesAlt from '../assets/branchesAlt.json';
 
 const TerritoryMap = () => {
 
@@ -17,15 +22,37 @@ const TerritoryMap = () => {
             zoomControl: false
         });
 
+        var legend = L.control({ position: 'topleft' });
 
+        legend.onAdd = function () {
 
-        // Add additional map setup here (like tile layers, markers, etc.)
+            var div = L.DomUtil.create('div', 'branch-legend');
+
+            return div;
+
+        }
+
+        legend.addTo(mapRef.current);
+
+        const legendContainer = document.querySelector('.branch-legend');
+        const legendRoot = createRoot(legendContainer);
+
+        //legendRoot.render(<MapLegend />);
 
         
+
+        mapRef.current.on('zoomend', () => {
+
+            console.log("overlay Pane", mapRef.current.getPane('mapPane'));
+
+        });
+
     }, []);
 
     return (
-        <div id="territory-map" style={{ height: '600px' }}></div> // Corrected inline style
+        
+        <div id="territory-map" style={{ height: '750px' }}></div>
+        
     );
 };
 

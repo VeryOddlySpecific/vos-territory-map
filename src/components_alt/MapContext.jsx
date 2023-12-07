@@ -8,10 +8,11 @@ export const MapContext = createContext();
 
 export const MapProvider = ({ children }) => {
 
-    const [activeRegions, setActiveRegions] = useState([]);
+    const [activeRegions, setActiveRegions] = useState(JSON.parse(admin.regions));
     const [activeSubregions, setActiveSubregions] = useState([]);
     const [activeSelection, setActiveSelection] = useState([]);
     const [mapLayers, setMapLayers] = useState([]);
+    const [legendKeyClicked, setLegendKeyClicked] = useState(null);
 
     const mapRef = useRef();
 
@@ -27,6 +28,8 @@ export const MapProvider = ({ children }) => {
             mapLayers,
             setMapLayers,
             mapRef,
+            legendKeyClicked,
+            setLegendKeyClicked,
         }}>
             {children}
         </MapContext.Provider>

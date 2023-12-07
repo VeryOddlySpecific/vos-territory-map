@@ -14,6 +14,8 @@
     "@turf/turf": "^6.5.0",
     "@wordpress/components": "^25.11.0",
     "@wordpress/element": "^5.22.0",
-    "@wordpress/scripts": "^26.15.0"
-    }
+    "@wordpress/icons": "^9.38.0",
+    "@wordpress/scripts": "^26.15.0",
+    "leaflet.bigimage": "^1.0.1"
+  }
 }

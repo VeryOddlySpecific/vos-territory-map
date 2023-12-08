@@ -6,10 +6,12 @@ import {
     ToggleControl,
     SelectControl,
     Button,
+    ButtonGroup,
     __experimentalHeading as Heading,
 } from '@wordpress/components';
 
 import { MapContext } from './MapContext';
+import SaveButton from './SaveButton';
 
 import { 
     useContext,
@@ -17,7 +19,7 @@ import {
     useEffect,
 } from '@wordpress/element';
 
-import branches from '../assets/branches.json';
+//import branches from '../assets/branches.json';
 import branchesAlt from '../assets/branchesAlt.json';
 
 const SubregionData = () => {
@@ -41,6 +43,7 @@ const SubregionData = () => {
 
     }
 
+    /*
     const activeSelectionIsActive = () => {
 
         if (activeSelection.length > 0) {
@@ -54,6 +57,7 @@ const SubregionData = () => {
         }
 
     }
+    */
 
     const activeSelectionBranch = () => {
 
@@ -71,6 +75,10 @@ const SubregionData = () => {
 
             }
 
+        } else {
+
+            return null;
+
         }
 
     }
@@ -81,11 +89,14 @@ const SubregionData = () => {
         setActiveSelection,
         activeSubregions,
         setActiveSubregions,
+        legendKeyClicked,
+        setLegendKeyClicked,
     } = useContext(MapContext);
 
     const [active, setActive] = useState(false);
     const [branchSelection, setBranchSelection] = useState(activeSelectionBranch());
     const [branchOptions, setBranchOptions] = useState(getBranchOptions());
+    const [init, setInit] = useState(true);
 
     const handleToggle = () => {
 
@@ -93,6 +104,7 @@ const SubregionData = () => {
 
         setActive(isActive);
 
+        /*
         // if isActive, add all activeSelection to activeSubregions
         if (isActive) {
 
@@ -103,6 +115,7 @@ const SubregionData = () => {
             setActiveSubregions(activeSubregions.filter(subregion => !activeSelection.includes(subregion)));
 
         }
+        */
 
     }
 
@@ -117,7 +130,7 @@ const SubregionData = () => {
 
         const styleToSet = branchesAlt[val].style;
 
-        console.log("styleToSet: ", styleToSet);
+        //console.log("styleToSet: ", styleToSet);
 
         // set branch of all activeSelection to val
         const updatedActiveSelection = activeSelection.map(subregion => {
@@ -152,6 +165,31 @@ const SubregionData = () => {
 
     const handleClearSelection = () => {
 
+        /*
+        activeSelection.forEach(subregion => {
+
+            if (subregion.branch) {
+
+                const branchStyle = branchesAlt[subregion.branch].style;
+
+                subregion.setStyle(branchStyle);
+
+            } else {
+
+                subregion.setStyle({
+                    color: '#0a1944',
+                    weight: 1,
+                    opacity: .25,
+                    fillColor: '#fff',
+                    fillOpacity: 0.25,
+                });
+
+            }
+
+        });
+        */
+
+        /*
         activeSelection.forEach(subregion => {
 
             // if subregion is not in  activeSubregions, clear style
@@ -168,9 +206,12 @@ const SubregionData = () => {
             }
 
         });
+        */
 
         // then, clear activeSelection
         setActiveSelection([]);
+
+        //setActive(false);
 
     }
 
@@ -194,7 +235,7 @@ const SubregionData = () => {
 
         const svgToPrint = mapRef.current.getPane('overlayPane').children[0].outerHTML;
 
-        console.log("svgToPrint: ", svgToPrint)
+        //console.log("svgToPrint: ", svgToPrint)
 
         printWindow.document.open();
         printWindow.document.write('<html><head></head><body>');
@@ -209,56 +250,97 @@ const SubregionData = () => {
 
     useEffect(() => {
 
-        if (activeSelection.length == 0) {
+        console.log("on activeSelection change");
+
+        //console.log("activeSelection: ", activeSelection);
+        //console.log("activeSubregions: ", activeSubregions);
+
+        // allActiveSelectionAreActive is true if
+        //     all activeSelection have an assigned branch
+        //     and activeSelection has length
+        const allActiveSelectionAreActive = activeSelection.every(subregion => subregion.branch) && activeSelection.length;
+
+        // activeSelectionHaveSameBranch is true if
+        //     all activeSelection have a branch &&
+        //     all activeSelection have the same branch &&
+        //     and activeSelection has length
+        const activeSelectionHaveSameBranch = activeSelection.every(subregion => subregion.branch === activeSelection[0].branch) && activeSelection.length;
+
+        // if
+        //     activeSelectionAreActive &&
+        //     activeSelectionHaveSameBranch
+        if (allActiveSelectionAreActive && activeSelectionHaveSameBranch) {
+
+            setActive(true);
+
+        } else {
 
             setActive(false);
 
         }
+        
+    }, [activeSelection])
 
-        /*
-        activeSubregions.forEach(subregion => {
+    useEffect(() => {
+        
+        if (!init) {
 
-            console.log("subregion to check for branch: ", subregion);
+            setBranchSelection(legendKeyClicked);
 
-            const subregionBranch = subregion.branch;
+            setLegendKeyClicked(null);
 
-            if (subregionBranch) {
-                    
-                    const styleToSet = branchesAlt[subregionBranch].style;
-    
-                    subregion.setStyle(styleToSet);
+        }
 
-            }
+        setInit(false);
 
-        })
-        */
-
-    }, [activeSelection, activeSubregions]);
+    }, [legendKeyClicked])
 
     useEffect(() => {
 
-        console.log("activeSelection: ", activeSelection);
-        console.log("activeSubregions: ", activeSubregions);
-        
-        const allSelectedAreActive = activeSelection.every(subregion => activeSubregions.includes(subregion));
+        // if active, set branchSelection to activeSelection branch
+        if (active) {
 
-        if (allSelectedAreActive) {
+            setBranchSelection(activeSelectionBranch());
+            setActiveSubregions([...activeSubregions, ...activeSelection]);
 
-            setActive(true);
+        } else {
+            // this runs when activate toggle is turned off
+            // and there is an activeSelection
+            // ...
+            // this means that the user wants to remove the selected subregions
+            // from activeSubregions and wants to clear its branch
 
+            setActiveSubregions(activeSubregions.filter(subregion => !activeSelection.includes(subregion)));
+
+            setBranchSelection(null);
+
+            // remove activeSelection from activeSubregions
+            setActiveSubregions(
+                activeSubregions.filter(
+                    subregion => !activeSelection.includes(subregion)
+                )
+            );
+
+            activeSelection.forEach(subregion => {
+
+                // clear subregion branch
+                subregion.branch = null;
+
+                // set subregion style to default
+                subregion.setStyle({
+                    color: '#0a1944',
+                    weight: 1,
+                    opacity: .25,
+                    fillColor: '#fff',
+                    fillOpacity: 0.25,
+                });
+
+            });
+
+            setActiveSelection([]);
         }
-
-        const allActiveSameBranch = activeSelection.every(subregion => subregion.branch === activeSelection[0].branch);
-
-        if (activeSelection.length && allActiveSameBranch) {
-
-            console.log("allActiveSameBranch: ", allActiveSameBranch);
-
-            setBranchSelection(activeSubregions[0].branch);
-
-        }
         
-    }, [activeSelection])
+    }, [active])
 
     return (
 
@@ -267,18 +349,37 @@ const SubregionData = () => {
             <CardHeader>
 
                 <Heading level={3}>Subregion Data</Heading>
-                <Button 
-                    variant="primary"
-                    onClick={handleClearSelection}
-                >Clear Selection</Button>
-                <Button
-                    variant="primary"
-                    onClick={handlePrint}
-                >Print Map</Button>
+                
 
             </CardHeader>
 
             <CardBody>
+
+                <ButtonGroup
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr 1fr',
+                        gap: '.5rem',
+                        placeItems: 'center',
+                        margin: '.5rem 0'
+                    }}
+                >
+                    <Button 
+                        variant="secondary"
+                        onClick={handleClearSelection}
+                    >Clear Selection</Button>
+                    <Button
+                        variant="secondary"
+                        onClick={handlePrint}
+                    >Print Map</Button>
+                    <SaveButton />
+                </ButtonGroup>
+
+                <CardDivider 
+                    style={{
+                        margin: '1rem 0'
+                    }}
+                />
 
                 <ToggleControl
                     label="Activate counties"
@@ -315,7 +416,9 @@ const SubregionData = () => {
                         
                         
                     ) : (
-                        console.log("activeSelection is empty")
+                        
+                        <></>
+
                     )
                     
                 }

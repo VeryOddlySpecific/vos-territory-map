@@ -8,6 +8,9 @@ class AFCT_Admin_Display {
 
         foreach ( $enqueue_items as $item ) {
 
+            
+            
+
             $handle = $item['handle'];
             $src = $this->resolve_src( $item['src'] );
             $deps = $item['deps'];
@@ -17,10 +20,29 @@ class AFCT_Admin_Display {
 
                 wp_enqueue_style( $handle, $src, $deps, $ver );
 
+                $deps_string = "[<br>" . implode( ',<br>', $deps ) . "<br>]";
+
+                $rendered_html_string = "wp_enqueue_style(<br>   $handle,<br>   $src,<br>   $deps_string,<br>   $ver <br>);";
+
             } else {
 
-                $in_footer = isset( $item['in_footer'] ) ? $item['in_footer'] : false;
-                wp_enqueue_script( $handle, $src, $deps, $ver, $in_footer );
+                if ( $item['in_footer'] === null ) {
+
+                    wp_enqueue_script( $handle, $src, $deps, $ver );
+
+                    $deps_string = "[<br>" . implode( ',<br>', $deps ) . "<br>]";
+
+                    $rendered_html_string = "wp_enqueue_script(<br>   $handle,<br>   $src,<br>   $deps_string,<br>   $ver <br>);";
+
+                } else {
+
+                    $in_footer = $item['in_footer'];
+                    wp_enqueue_script( $handle, $src, $deps, $ver, $in_footer );
+
+                    $deps_string = "[<br>" . implode( ',<br>', $deps ) . "<br>]";
+
+                    $rendered_html_string = "wp_enqueue_script(<br>   $handle,<br>   $src,<br>   $deps_string,<br>   $ver,<br>   $in_footer <br>);";
+                }
 
                 if ( isset( $item['localize'] ) && $item['localize'] === true ) {
 
@@ -28,7 +50,7 @@ class AFCT_Admin_Display {
                         'ajax_url' => admin_url( 'admin-ajax.php' ),
                         'regions' => get_option( '_afct_active_regions' ),
                         'subregions' => get_option( '_afct_active_subregions' ),
-                        'apiBase' => rest_url( 'afct/v1' ),
+                        'apiBase' => rest_url( 'afct/v1' )
                     );
 
                     wp_localize_script( $handle, 'admin', $obj );
@@ -37,7 +59,15 @@ class AFCT_Admin_Display {
 
             }
 
+            
+            //echo "<pre>";
+            //echo $rendered_html_string;
+            //echo "</pre>";
+            
+
         }
+
+        //exit;
 
     }
 

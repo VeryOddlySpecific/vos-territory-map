@@ -30,7 +30,7 @@ const SaveButton = () => {
 
         activeSubregions.forEach(subregion => {
 
-            console.log("subregion:", subregion);
+            //console.log("subregion:", subregion);
 
             const subregionData = {
                 _afct_id: subregion.options._afct_id,
@@ -75,7 +75,7 @@ const SaveButton = () => {
     
                 const responseData = await response.json();
     
-                console.log('Save successful:', responseData);
+                //console.log('Save successful:', responseData);
             
         } catch (error) {
 
@@ -90,7 +90,7 @@ const SaveButton = () => {
 
         if (runItems.includes('subregions')) {
 
-            console.log("subregionsToSave:", subregionsToSave);
+            //console.log("subregionsToSave:", subregionsToSave);
 
             const bodyToSave = JSON.stringify(subregionsToSave);
 
@@ -111,7 +111,7 @@ const SaveButton = () => {
 
         if (runItems.includes('regions')) {
 
-            console.log("regionsToSave:", regionsToSave);
+            //console.log("regionsToSave:", regionsToSave);
 
             var bodyToSave = JSON.stringify(activeRegions);
 

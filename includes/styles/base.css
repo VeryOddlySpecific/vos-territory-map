@@ -2,10 +2,3 @@
     display: grid;
     grid-template-columns: 2fr 5fr;
 }
-.afct-legend-item:hover {
-    transform: scale(1.1);
-}
-.branch-legend {
-    min-width: 25px;
-    background-color: #ffffff15;
-}

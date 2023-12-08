@@ -2,3 +2,7 @@ node_modules
 build
 old_files
 package-lock.json
+src/components_alt
+src/components_old
+src/admin.js
+src/public.js

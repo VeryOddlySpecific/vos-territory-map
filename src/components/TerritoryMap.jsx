@@ -1,14 +1,14 @@
 import { 
     useEffect,
     useContext,
-    createRoot
+    //createRoot
 } from '@wordpress/element';
 
-import MapLegend from './MapLegend';
+//import MapLegend from './MapLegend';
 
 import { MapContext } from './MapContext';
 
-import branchesAlt from '../assets/branchesAlt.json';
+//import branchesAlt from '../assets/branchesAlt.json';
 
 const TerritoryMap = () => {
 
@@ -35,7 +35,7 @@ const TerritoryMap = () => {
         legend.addTo(mapRef.current);
 
         const legendContainer = document.querySelector('.branch-legend');
-        const legendRoot = createRoot(legendContainer);
+        //const legendRoot = createRoot(legendContainer);
 
         //legendRoot.render(<MapLegend />);
 
@@ -43,7 +43,7 @@ const TerritoryMap = () => {
 
         mapRef.current.on('zoomend', () => {
 
-            console.log("overlay Pane", mapRef.current.getPane('mapPane'));
+            //console.log("overlay Pane", mapRef.current.getPane('mapPane'));
 
         });
 

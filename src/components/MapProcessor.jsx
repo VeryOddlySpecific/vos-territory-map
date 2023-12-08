@@ -10,7 +10,17 @@ import branchesAlt from "../assets/branchesAlt.json";
 
 const MapProcessor = () => {
 
-    const savedSubregions = JSON.parse(admin.subregions);
+    if (!admin.subregions) {
+
+        var adminSubregions = [];
+
+    } else {
+                
+        var adminSubregions = JSON.parse(admin.subregions);
+
+    }
+
+    const importedSubregions = adminSubregions;
 
     // context properties needed
     // map
@@ -28,11 +38,15 @@ const MapProcessor = () => {
         setMapLayers,
         legendKeyClicked,
         setLegendKeyClicked,
+        subregionHover,
+        setSubregionHover,
     } = useContext(MapContext);
 
     const [ region, setRegion ] = useState(null);
     const [ subregion, setSubregion ] = useState(null);
     const [ isClicked, setIsClicked ] = useState(false);
+
+    const [allowSave, setAllowSave] = useState(false);
 
     const [ init, setInit ] = useState(true);
 
@@ -55,11 +69,91 @@ const MapProcessor = () => {
 
     }
 
+    const saveActiveRegions = async () => {
+
+        console.log("saving active regions");
+
+        const payload = {
+            id: '_afct_active_regions',
+            data: JSON.stringify(activeRegions)
+        }
+
+        try {
+
+            const response = await fetch(admin.apiBase + '/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+
+            const data = await response.json();
+
+        } catch (error) {
+                
+            console.error(error);
+
+        }
+
+    }
+
+    const saveActiveSubregions = async () => {
+
+        console.log("saving active subregions");
+
+        const subregionSaveData = [];
+
+        activeSubregions.forEach(subregion => {
+
+            const subregionData = {
+                _afct_id: subregion.options._afct_id,
+                branch: subregion.branch,
+                geoid: subregion.feature.properties.GEOID
+            }
+
+            subregionSaveData.push(subregionData);
+
+        });
+
+        const payload = {
+            id: '_afct_active_subregions',
+            data: JSON.stringify(subregionSaveData)
+        }
+
+        try {
+
+            const response = await fetch(admin.apiBase + '/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+
+            const data = await response.json();
+
+        } catch (error) {
+            
+            console.error(error);
+
+        }
+
+    }
+
     // to add saved regions and subregions to map, ensuring their styles if needed
     useEffect(() => {
 
-        console.log("saved regions", activeRegions)
-        console.log("saved subregions", savedSubregions)
+        //console.log("saved regions", activeRegions)
+        //console.log("saved subregions", activeSubregions)
 
         if (activeRegions.length) {
 
@@ -83,8 +177,6 @@ const MapProcessor = () => {
         
     }, []);
 
-    
-
     useEffect(() => {
 
         //console.log("activeRegions", activeRegions);
@@ -94,6 +186,14 @@ const MapProcessor = () => {
     }, [activeRegions, activeSelection, mapLayers]);
 
     useEffect(() => {
+
+        if (!init) {
+
+            console.log("activeRegions allowed save");
+            setAllowSave(true);
+
+        }
+        
 
         // add region shape to map
         if (activeRegions.length) {
@@ -173,12 +273,12 @@ const MapProcessor = () => {
 
                     const geoid = feature.properties.GEOID;
 
-                    const featureIsActive = savedSubregions.some(subregion => Number(subregion.geoid) === Number(geoid));
+                    const featureIsActive = importedSubregions.some(subregion => Number(subregion.geoid) === Number(geoid));
                     
 
                     if (featureIsActive) {
 
-                        const activeSubregionBranch = savedSubregions.find(subregion => Number(subregion.geoid) === Number(geoid))?.branch;
+                        const activeSubregionBranch = importedSubregions.find(subregion => Number(subregion.geoid) === Number(geoid))?.branch;
 
                         const branchStyle = branchesAlt[activeSubregionBranch].style;
 
@@ -212,9 +312,31 @@ const MapProcessor = () => {
                         direction: 'center',
                     })
 
+                    layer.on('mouseover', () => {
+
+                        if (layer.branch) {
+
+                            setSubregionHover(layer.branch);
+
+                        }
+
+                    });
+
+                    layer.on('mouseout', () => {
+
+                        setSubregionHover(null);
+
+                    });
+
                     layer.bindTooltip(hoverTooltip);
 
-                    mapRef.current.on('zoom', () => {
+                    mapRef.current.on('zoomstart', () => {
+                     
+                        layer.unbindTooltip();
+                        
+                    })
+
+                    mapRef.current.on('zoomend', () => {
 
                         const zoom = mapRef.current.getZoom();
 
@@ -244,7 +366,7 @@ const MapProcessor = () => {
                             direction: 'center',
                         })
 
-                        if (zoom > 6) {
+                        if (zoom > 7) {
 
                             layer.unbindTooltip();
                             layer.bindTooltip(permTooltip);
@@ -285,7 +407,7 @@ const MapProcessor = () => {
 
                 subregion.setStyle({
                     opacity: 1,
-                    fillOpacity: 1,
+                    fillOpacity: .75,
                 })
 
                 setActiveSelection([...activeSelection, subregion]);
@@ -311,7 +433,12 @@ const MapProcessor = () => {
 
     useEffect(() => {
 
-        console.log("activeSubregions", activeSubregions)
+        if (!init) {
+
+            //console.log("activeSubregions allowed save");
+            //setAllowSave(true);
+
+        }
 
     }, [activeSubregions])
 
@@ -329,6 +456,121 @@ const MapProcessor = () => {
         }
         
     }, [legendKeyClicked])
+
+    useEffect(() => {
+
+        console.log("on activeSelection change");
+        
+        const activeSelectionEmpty = activeSelection.length === 0;
+
+        if (!activeSelectionEmpty) {
+
+            activeSelection.forEach(subregion => {
+
+                if (subregion.branch) {
+
+                    console.log("subregion has branch")
+                    const branch = branchesAlt[subregion.branch];
+
+                    if (Number(branch) === 6) {
+
+                        const style = branch.activeStyle;
+
+                        subregion.setStyle(style);
+
+                    } else {
+
+                        const style = branch.style;
+
+                        style.opacity = 1;
+                        style.fillOpacity = 1;
+
+                        subregion.setStyle(style);
+                    }
+
+                } else {
+
+                    console.log("subregion has no branch")
+
+                    subregion.setStyle({
+                        opacity: 1,
+                        fillOpacity: 1,
+                    })
+
+                }
+
+            });
+
+        } else if (activeSubregions.length) {
+
+            // reset styles on all map layers
+            mapRef.current.eachLayer(layer => {
+
+                // if layer is a subregion,
+                // determined by checking if layer.options._afct_id starts with 'subregion-'
+                // reset style to default, if no branch,
+                // or to branch style if branch is set
+                if (layer.options._afct_id) {
+
+                    if (layer.options._afct_id.startsWith('subregion-')) {
+
+                        const subregion = layer;
+
+                        if (subregion.branch) {
+
+                            const branch = branchesAlt[subregion.branch];
+
+                            const style = branch.style;
+
+                            style.opacity = .25;
+                            style.fillOpacity = .25;
+
+                            if (Number(branch) === 6) {
+
+                                console.log("branch 6 should get active style")
+                                const tempStyle = branch.activeStyle;
+
+                                subregion.setStyle(tempStyle);
+
+                            } else {
+
+                                subregion.setStyle(style);
+
+                            }
+
+                        } else {
+
+                            subregion.setStyle({
+                                opacity: .25,
+                                fillOpacity: .25,
+                            })
+
+                        }
+
+                    }
+
+                }
+
+            });
+
+        }
+        
+    }, [activeSelection])
+
+    useEffect(() => {
+        
+        if (allowSave) {
+
+            //console.log("save allowed confirmed");
+
+            //saveActiveRegions();
+            //saveActiveSubregions();
+
+            //setAllowSave(false);
+
+        }
+        
+    }, [allowSave])
 
 }
 

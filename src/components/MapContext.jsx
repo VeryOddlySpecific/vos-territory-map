@@ -8,11 +8,23 @@ export const MapContext = createContext();
 
 export const MapProvider = ({ children }) => {
 
-    const [activeRegions, setActiveRegions] = useState(JSON.parse(admin.regions));
+    const [saveApiRoute,] = useState(admin.apiBase + '/save');
+
+    if (!admin.regions) {
+
+        var adminRegions = [];
+
+    } else {
+            
+        var adminRegions = JSON.parse(admin.regions);
+    }
+
+    const [activeRegions, setActiveRegions] = useState(adminRegions);
     const [activeSubregions, setActiveSubregions] = useState([]);
     const [activeSelection, setActiveSelection] = useState([]);
     const [mapLayers, setMapLayers] = useState([]);
     const [legendKeyClicked, setLegendKeyClicked] = useState(null);
+    const [subregionHover, setSubregionHover] = useState(null);
 
     const mapRef = useRef();
 
@@ -30,6 +42,9 @@ export const MapProvider = ({ children }) => {
             mapRef,
             legendKeyClicked,
             setLegendKeyClicked,
+            subregionHover,
+            setSubregionHover,
+            saveApiRoute
         }}>
             {children}
         </MapContext.Provider>

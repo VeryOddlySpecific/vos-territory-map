@@ -1,8 +1,8 @@
 import TerritoryMap from './TerritoryMap';
 import RegionSelector from './RegionSelector';
-import SubregionData from './SubregionData2';
-import MapProcessor from './MapProcessor2';
-import LayerStyles from './LayerStyles';
+import SubregionData from './SubregionData';
+import MapProcessor from './MapProcessor';
+import LayerStyles from '../components_alt/LayerStyles';
 import MapLegend from './MapLegend';
 
 const Layout = () => {
@@ -19,6 +19,20 @@ const Layout = () => {
         </>
     );
 
-}
+};
+
+const PublicLayout = () => {
+
+    return (
+        <>
+            <MapLegend />
+            <TerritoryMap />
+            <MapProcessor />
+        </>
+    );
+
+};
 
 export default Layout;
+
+export { PublicLayout };

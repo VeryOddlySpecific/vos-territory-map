@@ -4,8 +4,6 @@ const path = require('path');
 module.exports = {
     ...defaultConfig,
     entry: {
-        'admin': './src/admin.js',
-        'public': './src/public.js',
         'test': './src/test.js',
     },
     output: {

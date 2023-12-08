@@ -155,7 +155,7 @@ const MapProcessor = () => {
 
     useEffect(() => {
         
-        console.log('activeSelection useEffect', activeSelection)
+        console.log("on activeSelection change");
         
     }, [activeSelection]);
 

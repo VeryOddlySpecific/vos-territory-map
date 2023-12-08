@@ -42,7 +42,7 @@ const RegionSelector = () => {
 
             <CardHeader>
                 <Heading>Region Selector</Heading>
-                <SaveButton />
+                
             </CardHeader>
 
             <CardBody>

@@ -86,7 +86,7 @@ class AFCT_Settings {
         add_menu_page(
             'AFC Territory Map',
             'Territory Map',
-            'manage_options',
+            'edit_afc_territory',
             'afc-territory-map',
             array( $this, 'render_settings_page' ),
             'dashicons-location-alt',

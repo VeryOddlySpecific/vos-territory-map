@@ -3,7 +3,7 @@ import {
     useEffect,
 } from "@wordpress/element";
 
-import { MapContext } from "./MapContext";
+import { MapContext } from "../components/MapContext";
 
 import branchesAlt from "../assets/branches.json";
 
@@ -23,13 +23,13 @@ const LayerStyles = () => {
 
             if (subregion.branch) {
 
-                console.log("subregion", subregion)
-                console.log("subregion.branch", subregion.branch)
-                console.log("branchesAlt", branchesAlt)
+                //console.log("subregion", subregion)
+                //console.log("subregion.branch", subregion.branch)
+                //console.log("branchesAlt", branchesAlt)
 
                 const branch = branchesAlt.find(branchAlt => Number(branchAlt.value) === Number(subregion.branch));
 
-                console.log("branch", branch);
+                //console.log("branch", branch);
 
                 const style = branch.style;
 

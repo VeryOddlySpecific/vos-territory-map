@@ -8,43 +8,28 @@ export const MapContext = createContext();
 
 export const MapProvider = ({ children }) => {
 
-    const [saveApiRoute,] = useState(admin.apiBase + '/save');
-
-    if (!admin.regions) {
-
-        var adminRegions = [];
-
-    } else {
-            
-        var adminRegions = JSON.parse(admin.regions);
-    }
-
-    const [activeRegions, setActiveRegions] = useState(adminRegions);
+    const [activeRegions, setActiveRegions] = useState([]);
     const [activeSubregions, setActiveSubregions] = useState([]);
     const [activeSelection, setActiveSelection] = useState([]);
-    const [mapLayers, setMapLayers] = useState([]);
     const [legendKeyClicked, setLegendKeyClicked] = useState(null);
-    const [subregionHover, setSubregionHover] = useState(null);
+    const [toggledRegion, setToggledRegion] = useState({});
 
     const mapRef = useRef();
 
 
     return (
         <MapContext.Provider value={{
+            mapRef,
             activeRegions,
             setActiveRegions,
             activeSubregions,
             setActiveSubregions,
             activeSelection,
             setActiveSelection,
-            mapLayers,
-            setMapLayers,
-            mapRef,
+            toggledRegion,
+            setToggledRegion,
             legendKeyClicked,
             setLegendKeyClicked,
-            subregionHover,
-            setSubregionHover,
-            saveApiRoute
         }}>
             {children}
         </MapContext.Provider>

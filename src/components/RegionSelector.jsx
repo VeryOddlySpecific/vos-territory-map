@@ -9,31 +9,24 @@ import {
 
 import RegionData from '../assets/fips.json';
 
-import SaveButton from './SaveButton';
-
 import { MapContext } from './MapContext';
 import { useContext } from '@wordpress/element';
 
 const RegionSelector = () => {
 
-    const { activeRegions, setActiveRegions } = useContext(MapContext);
+    const { 
+        activeRegions,
+        setToggledRegion,
+    } = useContext(MapContext);
 
     const toggleRegion = (region) => {
-
-        if (activeRegions.includes(region)) {
-
-            //console.log("region unchecked:", region);
-
-            setActiveRegions(activeRegions.filter(item => item !== region));
-
-        } else {
-
-            //console.log("region checked:", region);
-
-            setActiveRegions([...activeRegions, region]);
-
+        const regionIsActive = activeRegions.includes(region);
+        const regionData = {
+            fips: region,
+            active: !regionIsActive
         }
 
+        setToggledRegion(regionData);
     }
 
     return (

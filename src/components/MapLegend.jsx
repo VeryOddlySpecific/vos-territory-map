@@ -4,146 +4,27 @@ import { MapContext } from './MapContext';
 
 import { 
     useContext,
-    useState,
-    useEffect,
 } from '@wordpress/element';
 
 import {
     Card,
     CardHeader,
     CardBody,
-    ColorIndicator,
     __experimentalHeading as Heading,
     __experimentalText as Text,
     __experimentalGrid as Grid,
-    Icon,
     Button,
 } from '@wordpress/components';
 
-import {
-    mapMarker,
-} from '@wordpress/icons';
-
 const MapLegend = () => {
 
-    const { 
-        activeSelection,
-        setActiveSelection,
-        activeSubregions,
+    const {
         setLegendKeyClicked,
-        mapRef,
-        subregionHover,
     } = useContext(MapContext);
 
-    const [clickedBranch, setClickedBranch] = useState(null);
-    const [init, setInit] = useState(true);
-
     const handleClick = (key) => {
-
-        // step 1: clear active selection
-        // step 2: set clicked branch
-        // step 3: set active selection
-
-        // clear active selection
-        setActiveSelection([]);
-
-        // set clicked branch
-        setClickedBranch(key);
-
-        // set active selection
-        const branchSubregions = [];
-
-        activeSubregions.forEach(subregion => {
-
-            if (subregion.branch && subregion.branch === key) {
-                    
-                branchSubregions.push(subregion);
-
-            }
-
-        });
-
-        if (branchSubregions.length) {
-
-            console.log("branchSubregions", branchSubregions);
-            setActiveSelection(branchSubregions);
-
-            mapRef.current.flyToBounds(branchSubregions.map(subregion => subregion.getBounds()));
-        }
-
+        setLegendKeyClicked(key);
     }
-
-    useEffect(() => {
-
-        console.log("on activeSelection change");
-
-        if (init) {
-
-            setInit(false);
-
-            return;
-
-        }
-
-        if (activeSelection.length) {
-
-            // reset styles on active selection
-            activeSelection.forEach(subregion => {
-            
-                if (subregion.branch) {
-
-                    const branchStyle = branchesAlt[subregion.branch].style;
-
-                    if (Number(subregion.branch) === 6) {
-
-                        console.log("Map legend should give branch 6 active style")
-                        subregion.setStyle(branchesAlt[subregion.branch].activeStyle);
-
-                    } else {
-
-                        subregion.setStyle(branchStyle);
-
-                    }
-
-                    
-
-                } else {
-
-                    subregion.setStyle({
-                        color: '#0a1944',
-                        weight: 1,
-                        opacity: .25,
-                        fillColor: '#fff',
-                        fillOpacity: 0.25,
-                    });
-
-                }
-
-            });
-
-        }  
-
-    }, [activeSelection])
-
-    useEffect(() => {
-
-        if (clickedBranch !== null) {
-
-            setActiveSelection(
-                activeSubregions.filter(
-                    subregion => subregion.branch === clickedBranch
-                )
-            )
-
-        }
-
-    }, [clickedBranch])
-
-    useEffect(() => {
-
-        
-
-    }, [subregionHover])
 
     return (
         
@@ -165,6 +46,8 @@ const MapLegend = () => {
                         const branchName = branchesAlt[branchKey].label;
                         const branchOpac = branchesAlt[branchKey].style.opacity;
                         const branchWght = branchesAlt[branchKey].style.weight;
+
+                        const branchStyle = branchesAlt[branchKey].style;
 
                         var [city, state] = branchName.split(', ');
 

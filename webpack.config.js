@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
     ...defaultConfig,
     entry: {
-        'test': './src/test.js',
+        'index': './src/index.js',
     },
     output: {
         path: path.join(__dirname, '/build'),

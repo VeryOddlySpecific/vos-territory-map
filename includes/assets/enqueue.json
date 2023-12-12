@@ -44,7 +44,7 @@
     {
         "type": "script",
         "handle": "afc-territory-js",
-        "src": "build/test.js",
+        "src": "build/index.js",
         "deps": [
             "wp-components",
             "wp-element",

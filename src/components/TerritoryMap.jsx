@@ -22,31 +22,6 @@ const TerritoryMap = () => {
             zoomControl: false
         });
 
-        var legend = L.control({ position: 'topleft' });
-
-        legend.onAdd = function () {
-
-            var div = L.DomUtil.create('div', 'branch-legend');
-
-            return div;
-
-        }
-
-        legend.addTo(mapRef.current);
-
-        const legendContainer = document.querySelector('.branch-legend');
-        //const legendRoot = createRoot(legendContainer);
-
-        //legendRoot.render(<MapLegend />);
-
-        
-
-        mapRef.current.on('zoomend', () => {
-
-            //console.log("overlay Pane", mapRef.current.getPane('mapPane'));
-
-        });
-
     }, []);
 
     return (

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: American Fence Territory
  * Description: Territory map for American Fence
- * Version: 2.0
+ * Version: 2.5.0
  * Author: Eugene Bates
  * Contributors: Alexander Steadman, Vannesa Kasun
  * License: GPL2

@@ -7,6 +7,13 @@
             "opacity": 0.65,
             "fillColor": "#ff5733",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#ff5733",
+            "fillOpacity": 0.95
         }
     },
     "2": {
@@ -17,6 +24,13 @@
             "opacity": 0.65,
             "fillColor": "#33ff57",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#33ff57",
+            "fillOpacity": 0.95
         }
     },
     "3": {
@@ -27,6 +41,13 @@
             "opacity": 0.65,
             "fillColor": "#3366ff",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#3366ff",
+            "fillOpacity": 0.95
         }
     },
     "4": {
@@ -37,6 +58,13 @@
             "opacity": 0.65,
             "fillColor": "#ff33d1",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#ff33d1",
+            "fillOpacity": 0.95
         }
     },
     "5": {
@@ -47,6 +75,13 @@
             "opacity": 0.65,
             "fillColor": "#ffd133",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#ffd133",
+            "fillOpacity": 0.95
         }
     },
     "6": {
@@ -74,6 +109,13 @@
             "opacity": 0.65,
             "fillColor": "#ff33b7",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#ff33b7",
+            "fillOpacity": 0.95
         }
     },
     "8": {
@@ -84,6 +126,13 @@
             "opacity": 0.65,
             "fillColor": "#33b7ff",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#33b7ff",
+            "fillOpacity": 0.95
         }
     },
     "9": {
@@ -111,6 +160,13 @@
             "opacity": 0.65,
             "fillColor": "#ffb733",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#ffb733",
+            "fillOpacity": 0.95
         }
     },
     "11": {
@@ -121,6 +177,13 @@
             "opacity": 0.65,
             "fillColor": "#b7ff33",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#b7ff33",
+            "fillOpacity": 0.95
         }
     },
     "12": {
@@ -131,6 +194,13 @@
             "opacity": 0.65,
             "fillColor": "#ff3366",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#ff3366",
+            "fillOpacity": 0.95
         }
     },
     "13": {
@@ -141,6 +211,13 @@
             "opacity": 0.65,
             "fillColor": "#6633ff",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 2,
+            "opacity": 1,
+            "fillColor": "#6633ff",
+            "fillOpacity": 0.95
         }
     },
     "14": {
@@ -151,6 +228,13 @@
             "opacity": 0.65,
             "fillColor": "#ff9393",
             "fillOpacity": 0.25
+        },
+        "activeStyle": {
+            "color": "#0a1944",
+            "weight": 3,
+            "opacity": 1,
+            "fillColor": "#ff9393",
+            "fillOpacity": 0.95
         }
     }
 }

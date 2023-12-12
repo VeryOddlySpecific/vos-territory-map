@@ -84,6 +84,70 @@ const MapProcessor = () => {
                         });
                     }
 
+                    const zoom = mapRef.current.getZoom();
+
+                    layer.bindTooltip(
+                        feature.properties.Name + ' County',
+                        {
+                            permanent: false,
+                            direction: 'center',
+                        }
+                    );
+
+                    mapRef.current.on('zoomstart', () => {
+                        layer.unbindTooltip();
+                    });
+
+                    mapRef.current.on('zoomend', () => {
+                        const zoom = mapRef.current.getZoom();
+                        if (zoom > 7) {
+                            layer.bindTooltip(
+                                feature.properties.Name + ' County',
+                                {
+                                    permanent: true,
+                                    direction: 'center',
+                                }
+                            );
+                        } else {
+                            layer.bindTooltip(
+                                feature.properties.Name + ' County',
+                                {
+                                    permanent: false,
+                                    direction: 'center',
+                                }
+                            );
+                        }
+                    });
+
+                    /*
+                    const hoverTooltip = L.tooltip({
+                        content: feature.properties.Name + ' County',
+                        permanent: false,
+                        direction: center,
+                        opacity: .9
+                    })
+                    const permaTooltip = L.tooltip({
+                        content: feature.properties.Name + ' County',
+                        permanent: true,
+                        direction: center,
+                        opacity: .9
+                    })
+
+                    mapRef.current.on('zoomstart', () => {
+                        layer.unbindTooltip();
+                    });
+
+                    mapRef.current.on('zoomend', () => {
+                        layer.unbindTooltip();
+                        const zoom = mapRef.current.getZoom();
+                        if (zoom > 7) {
+                            layer.bindTooltip(permaTooltip);
+                        } else {
+                            layer.bindTooltip(hoverTooltip);
+                        }
+                    });
+                    */
+
                     layer.on('click', (e) => {
                         setSubregion(e.target);
                         setIsClicked(true);

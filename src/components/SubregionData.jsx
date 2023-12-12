@@ -193,7 +193,13 @@ const SubregionData = () => {
             <CardBody>
 
 
-                <ButtonGroup>
+                <ButtonGroup
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gridGap: '2rem',
+                    }}
+                >
 
                     <Button
                         isSecondary

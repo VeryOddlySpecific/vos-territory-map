@@ -1,11 +1,12 @@
 {
-  "name": "vos-territory-map",
+  "name": "afc-territory-map",
   "version": "1.0.0",
   "description": "",
   "main": "webpack.config.js",
   "scripts": {
     "start": "wp-scripts start",
-    "build": "wp-scripts build"
+    "build": "wp-scripts build",
+    "plugin-zip": "wp-scripts plugin-zip"
   },
   "keywords": [],
   "author": "",

@@ -49,8 +49,35 @@ const MapProcessor = () => {
             const response = await fetch(apiRoute);
             const data = await response.json();
 
-            const regionShape = turf.convex(turf.combine(data), {concavity: 1});
-            const regionShapeLayer = L.geoJson(regionShape, {
+            /* I know this part works, generally speaking. I'm not sure if it's the best way to do it, but it works.
+
+            let combined = turf.combine(data);
+            let regionShape = turf.convex(combined, {concavity: 1});
+
+            */
+
+            let combined = turf.combine(data);
+            let regionShape = turf.convex(combined, {concavity: 1});
+
+            const maskPolygon = turf.mask(combined, null);
+            let maskPolygonCoords = maskPolygon.geometry.coordinates[1];
+
+            let interiorMaskPolygon = turf.polygon([maskPolygonCoords]);
+
+            //console.log("maskPolygon", maskPolygon)
+            // invert the mask polygon
+            //const invertedMask = turf.difference(combined, maskPolygon);
+
+            
+            
+            
+
+            let regionData = {
+                raw: data,
+                shape: regionShape,
+            }
+
+            const regionShapeLayer = L.geoJson(interiorMaskPolygon, {
                 style: {
                     color: '#0a1944',
                     weight: 2,
@@ -109,6 +136,8 @@ const MapProcessor = () => {
                                 }
                             );
                         } else {
+                            //console.log(layer)
+                            //console.log(feature)
                             layer.bindTooltip(
                                 feature.properties.Name + ' County',
                                 {
@@ -119,39 +148,16 @@ const MapProcessor = () => {
                         }
                     });
 
-                    /*
-                    const hoverTooltip = L.tooltip({
-                        content: feature.properties.Name + ' County',
-                        permanent: false,
-                        direction: center,
-                        opacity: .9
-                    })
-                    const permaTooltip = L.tooltip({
-                        content: feature.properties.Name + ' County',
-                        permanent: true,
-                        direction: center,
-                        opacity: .9
-                    })
-
-                    mapRef.current.on('zoomstart', () => {
-                        layer.unbindTooltip();
-                    });
-
-                    mapRef.current.on('zoomend', () => {
-                        layer.unbindTooltip();
-                        const zoom = mapRef.current.getZoom();
-                        if (zoom > 7) {
-                            layer.bindTooltip(permaTooltip);
-                        } else {
-                            layer.bindTooltip(hoverTooltip);
-                        }
-                    });
-                    */
-
                     layer.on('click', (e) => {
                         setSubregion(e.target);
                         setIsClicked(true);
                     });
+
+                    layer.on('baselayerchange', (e) => {
+                        console.log(e);
+                    });
+
+                    layer.options._afct_sr_name = feature.properties.Name;
                 },
                 _afct_id: 'subregions-' + rFips,
             });

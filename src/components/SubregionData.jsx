@@ -12,6 +12,7 @@ import {
 
 import { MapContext } from './MapContext';
 import SaveButton from './SaveButton';
+import PrintButton from './PrintButton';
 
 import { 
     useContext,
@@ -73,18 +74,13 @@ const SubregionData = () => {
 
     const handlePrint = () => {
 
-        var printWindow = window.open('');
+        console.log("print button clicked");
 
-        const svgToPrint = mapRef.current.getPane('overlayPane').children[0].outerHTML;
-
-        printWindow.document.open();
-        printWindow.document.write('<html><head></head><body>');
-        printWindow.document.write(svgToPrint);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        
-        printWindow.print();
-        printWindow.close();
+        // fetch geoJson data for all activeRegions and activeSubregions
+        // process geoJson data into a vector format, adding styles as needed
+        // combine all vector data into a single vector
+        // create svg element from combined vector
+        // download svg element as file
 
     }
 
@@ -206,6 +202,7 @@ const SubregionData = () => {
                         onClick={handleClearSelection}
                     >Clear Selection</Button>
                     <SaveButton />
+                    <PrintButton />
                 </ButtonGroup>
 
                 <CardDivider 

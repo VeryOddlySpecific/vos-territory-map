@@ -12,11 +12,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@mapbox/geojson-extent": "^1.0.1",
+    "@turf/convex": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "@wordpress/components": "^25.11.0",
     "@wordpress/element": "^5.22.0",
     "@wordpress/icons": "^9.38.0",
     "@wordpress/scripts": "^26.15.0",
-    "leaflet.bigimage": "^1.0.1"
+    "geojson2svg": "^2.0.1",
+    "leaflet.bigimage": "^1.0.1",
+    "leaflet.browser.print": "^2.0.2",
+    "parse-svg": "^0.0.0"
   }
 }

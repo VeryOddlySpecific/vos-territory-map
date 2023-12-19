@@ -43,13 +43,31 @@
     },
     {
         "type": "script",
+        "handle": "geojson2svg",
+        "src": "https://cdnjs.cloudflare.com/ajax/libs/geojson2svg/2.0.1/geojson2svg.js",
+        "deps": [],
+        "ver": null,
+        "in_footer": true
+    },
+    {
+        "type": "script",
+        "handle": "geojson-extent",
+        "src": "includes/assets/geojson-extent.js",
+        "deps": [],
+        "ver": null,
+        "in_footer": true
+    },
+    {
+        "type": "script",
         "handle": "afc-territory-js",
         "src": "build/index.js",
         "deps": [
             "wp-components",
             "wp-element",
             "leaflet-js",
-            "turf-js"
+            "turf-js",
+            "geojson2svg",
+            "geojson-extent"
         ],
         "ver": null,
         "in_footer": true,

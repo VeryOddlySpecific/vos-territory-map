@@ -26,6 +26,8 @@ const TerritoryMap = () => {
             ],
         });
 
+        
+
 
         mapRef.current.on('zoomend', () => {
             const props = {

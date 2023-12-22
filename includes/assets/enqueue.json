@@ -59,6 +59,33 @@
     },
     {
         "type": "script",
+        "handle": "proj4",
+        "src": "includes/assets/proj4.js",
+        "deps": [],
+        "ver": null,
+        "in_footer": true
+    },
+    {
+        "type": "script",
+        "handle": "proj4leaflet",
+        "src": "includes/assets/proj4leaflet.js",
+        "deps": [
+            "leaflet-js",
+            "proj4"
+        ],
+        "ver": null,
+        "in_footer": true
+    },
+    {
+        "type": "script",
+        "handle": "jsPDF",
+        "src": "https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js",
+        "deps": [],
+        "ver": null,
+        "in_footer": true
+    },
+    {
+        "type": "script",
         "handle": "afc-territory-js",
         "src": "build/index.js",
         "deps": [
@@ -67,7 +94,9 @@
             "leaflet-js",
             "turf-js",
             "geojson2svg",
-            "geojson-extent"
+            "geojson-extent",
+            "jsPDF",
+            "proj4leaflet"
         ],
         "ver": null,
         "in_footer": true,

@@ -16,19 +16,24 @@ const TerritoryMap = () => {
 
     useEffect(() => {
 
-        mapRef.current = L.map('territory-map', {
-            center: [39.8283, -98.5795],
-            zoom: 4,
-            zoomControl: false,
-            maxBounds: [
-                [49.384, -66.885],
-                [24.396, -124.848]
-            ],
-        });
+        if (admin.mapData) {
 
+            mapRef.current = JSON.parse(admin.mapData);
+
+        } else {
+
+            mapRef.current = L.map('territory-map', {
+                center: [39.8283, -98.5795],
+                zoom: 4,
+                zoomControl: false,
+                maxBounds: [
+                    [49.384, -66.885],
+                    [24.396, -124.848]
+                ],
+            });
+
+        }
         
-
-
         mapRef.current.on('zoomend', () => {
             const props = {
                 center: mapRef.current.getCenter(),

@@ -50,7 +50,8 @@ class AFCT_Admin_Display {
                         'ajax_url' => admin_url( 'admin-ajax.php' ),
                         'regions' => get_option( '_afct_active_regions' ),
                         'subregions' => get_option( '_afct_active_subregions' ),
-                        'apiBase' => rest_url( 'afct/v1' )
+                        'apiBase' => rest_url( 'afct/v1' ),
+                        'mapData' => get_option( '_afct_map_data' ),
                     );
 
                     wp_localize_script( $handle, 'admin', $obj );

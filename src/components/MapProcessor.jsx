@@ -49,6 +49,9 @@ const MapProcessor = () => {
             const response = await fetch(apiRoute);
             const data = await response.json();
 
+            // const savedRegionShape  = await fetch(admin.apiBase + '/region-shape/' + rFips);
+            // const savedSubregions   = await fetch(admin.apiBase + '/subregions/' + rFips);
+
             let combined    = turf.combine(data);
             let regionShape = turf.convex(combined, {concavity: 1});
 
@@ -67,6 +70,7 @@ const MapProcessor = () => {
                 _afct_id: 'shape-' + rFips
             });
             regionShapeLayer.addTo(mapRef.current);
+
             setActiveRegions((prevActiveRegions) => [...prevActiveRegions, rFips]);
 
             const subregionsLayer = L.geoJson(data, {

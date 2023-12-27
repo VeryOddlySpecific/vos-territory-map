@@ -9,7 +9,7 @@ const SaveButton = () => {
 
     const { 
         activeSubregions, 
-        activeRegions 
+        activeRegions,
     } = useContext(MapContext);
 
     const saveApiRoute = admin.apiBase + '/save';

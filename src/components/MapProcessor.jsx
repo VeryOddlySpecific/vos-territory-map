@@ -49,33 +49,12 @@ const MapProcessor = () => {
             const response = await fetch(apiRoute);
             const data = await response.json();
 
-            /* I know this part works, generally speaking. I'm not sure if it's the best way to do it, but it works.
-
-            let combined = turf.combine(data);
-            let regionShape = turf.convex(combined, {concavity: 1});
-
-            */
-
-            let combined = turf.combine(data);
+            let combined    = turf.combine(data);
             let regionShape = turf.convex(combined, {concavity: 1});
 
             const maskPolygon = turf.mask(combined, null);
             let maskPolygonCoords = maskPolygon.geometry.coordinates[1];
-
             let interiorMaskPolygon = turf.polygon([maskPolygonCoords]);
-
-            //console.log("maskPolygon", maskPolygon)
-            // invert the mask polygon
-            //const invertedMask = turf.difference(combined, maskPolygon);
-
-            
-            
-            
-
-            let regionData = {
-                raw: data,
-                shape: regionShape,
-            }
 
             const regionShapeLayer = L.geoJson(interiorMaskPolygon, {
                 style: {

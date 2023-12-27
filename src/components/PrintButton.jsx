@@ -9,6 +9,7 @@ import {
 import { MapContext } from './MapContext';
 
 import branchesAlt from '../assets/branchesAlt.json';
+import { notFound } from '@wordpress/icons';
 
 const PrintButton = () => {
     
@@ -35,14 +36,14 @@ const PrintButton = () => {
             let nodeOpac = branchesAlt[key].style.fillOpacity
             let fontSize = Math.round(nodeHght / 3.5)
             let textOfst = Math.round(nodeHght / 2) + (fontSize / 2)
-            let textYpos = nodeYpos + textOfst
+            let textYpos = nodeYpos + textOfst + nodeHght
 
             rectNode.setAttribute('width', nodeWdth)
             rectNode.setAttribute('height', nodeHght)
             rectNode.setAttribute('fill', nodeColr)
             rectNode.setAttribute('fill-opacity', nodeOpac)
             rectNode.setAttribute('x', nodeXpos)
-            rectNode.setAttribute('y', nodeYpos)
+            rectNode.setAttribute('y', nodeYpos + nodeHght)
 
             cityNode.setAttribute('x', nodeCent)
             regnNode.setAttribute('x', nodeCent)
@@ -72,25 +73,21 @@ const PrintButton = () => {
     const convertCoordToPixel = (coords, args, depth = 0) => {
         if (depth > 10) console.error("too deep in convertCoordToPixel", coords, args, depth)
 
-        let pixlWdth    = args.pixlWdth
-        let pixlHght    = args.pixlHght
+        let pixlWdth    = args.pxWidth
+        let pixlHght    = args.pxHeight
         let mLonLeft    = args.mLonLeft
         let mLonDelta   = args.mLonDelta
-        let mLatBottom  = args.mLatBottom
         let mLatBottomD = args.mLatBottomD
-
 
         if (typeof coords[0] === 'number') {
 
-            let lon = coords[0]
-            let lat = coords[1]
-
-            let newX = (lon - mLonLeft) * (pixlWdth / mLonDelta)
-            
-            let nLat = lat * Math.PI / 180
-            let worldWidth = ((pixlWdth / mLonDelta) * 360) / (2 * Math.PI)
-            let offsetY = (worldWidth / 2 * Math.log((1 + Math.sin(mLatBottomD)) / (1 - Math.sin(mLatBottomD))))
-            let newY = pixlHght - ((worldWidth / 2 * Math.log((1 + Math.sin(nLat)) / (1 - Math.sin(nLat)))) - offsetY)
+            let lon         = coords[0]
+            let lat         = coords[1]
+            let newX        = (lon - mLonLeft) * (pixlWdth / mLonDelta)
+            let nLat        = lat * Math.PI / 180
+            let worldWidth  = ((pixlWdth / mLonDelta) * 360) / (2 * Math.PI)
+            let offsetY     = (worldWidth / 2 * Math.log((1 + Math.sin(mLatBottomD)) / (1 - Math.sin(mLatBottomD))))
+            let newY        = pixlHght - ((worldWidth / 2 * Math.log((1 + Math.sin(nLat)) / (1 - Math.sin(nLat)))) - offsetY)
 
             return [newX, newY]
 
@@ -108,13 +105,13 @@ const PrintButton = () => {
         let collection  = args.collection
 
         let convertArgs = {
-            pixlWdth:   pxWidth,
-            pixlHght:   pxHeight,
-            mLonLeft:   bBox[0],
-            mLonRight:  bBox[2],
-            mLonDelta:  bBox[2] - bBox[0],
-            mLatBottom: bBox[1],
-            mLatBottomD:bBox[1] * Math.PI / 180,
+            pxWidth: pxWidth,
+            pxHeight: pxHeight,
+            mLonLeft: bBox[0][1],
+            mLonRight: bBox[1][1],
+            mLonDelta: bBox[1][1] - bBox[0][1],
+            mLatBottom: bBox[1][0],
+            mLatBottomD: bBox[1][0] * Math.PI / 180,
         }
 
         const newFeatures = []
@@ -179,22 +176,18 @@ const PrintButton = () => {
             }
 
         }
+
         collection.features.forEach(feature => {
-            
-            
+
             let coordinates = feature.geometry.coordinates
             let featureType = feature.geometry.type
-            let isSubregion = feature.properties._afct_id.includes('subregions-')
 
             let geomConvert = convertCoordToPixel(coordinates, convertArgs)
 
-            const geometry = {
-                "type": featureType,
-                "coordinates": geomConvert
-            }
+            feature.geometry.coordinates = geomConvert
 
             const featProps = {
-                name: isSubregion ? feature.properties._afct_sr_name : null,
+                name: feature.properties.name ? feature.properties.name : null,
                 color: feature.properties.color,
                 fillColor: feature.properties.fillColor,
                 fillOpacity: feature.properties.fillOpacity,
@@ -202,9 +195,7 @@ const PrintButton = () => {
                 weight: feature.properties.weight,
             }
 
-            let newFeat = turf.feature(geometry, featProps)
-
-            newFeatures.push(newFeat)
+            newFeatures.push(feature)
 
         })
 
@@ -245,102 +236,132 @@ const PrintButton = () => {
     }
 
     const getTextNodes = (args) => {
-        //console.log("get text nodes args", args)
-
-        let pxWidth     = args.width
-        let pxHeight    = args.height
-        let bBox        = args.bBox
         let collection  = args.collection
-
-        let convArgs    = {
-            pixlWdth:   pxWidth,
-            pixlHght:   pxHeight,
-            mLonLeft:   bBox[0],
-            mLonRight:  bBox[2],
-            mLonDelta:  bBox[2] - bBox[0],
-            mLatBottom: bBox[1],
-            mLatBottomD:bBox[1] * Math.PI / 180,
-        }
 
         let textNodes = []
 
         collection.features.forEach(feature => {
-            let isSubregion = feature.properties._afct_id.includes('subregions-')
 
-            if (!isSubregion) return
+            if (!feature.properties.name) return
 
             let centroid    = turf.centerOfMass(feature)
-            let coords      = convertCoordToPixel(centroid.geometry.coordinates, convArgs)            
-            let content     = feature.properties._afct_sr_name
+            let centerX     = centroid.geometry.coordinates[0]
+            let centerY     = centroid.geometry.coordinates[1]
+            let content     = feature.properties.name
+
             let textNode    = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-            
-            textNode.setAttribute('x', coords[0])
-            textNode.setAttribute('y', coords[1])
-            textNode.setAttribute('font-size', '12px')
-            textNode.setAttribute('font-family', 'sans-serif')
-            textNode.setAttribute('fill', 'black')
-            textNode.setAttribute('text-anchor', 'middle')
+            let textX       = centerX
+            let textY       = centerY
+            let fontSize    = '12px'
+            let fontFamily  = 'sans-serif'
+            let fill        = 'black'
+            let textAnchor  = 'middle'
+
+            textNode.setAttribute('x', textX)
+            textNode.setAttribute('y', textY)
+            textNode.setAttribute('font-size', fontSize)
+            textNode.setAttribute('font-family', fontFamily)
+            textNode.setAttribute('fill', fill)
+            textNode.setAttribute('text-anchor', textAnchor)
             textNode.innerHTML = content
 
-            textNodes.push(textNode.outerHTML)            
+            textNodes.push(textNode.outerHTML)
+
         })
 
         return textNodes
     }
+
+    const cleanLayerCoords = (layer) => {
+        let cleaned = turf.cleanCoords(layer.feature, {mutate: true})
+        return cleaned
+    }
+
+    const getFeatureCollection = (allFeatNodes) => {
+        let featureCollection = turf.featureCollection(allFeatNodes)
+        return featureCollection
+    }
+
+    const getBbox = (featureCollection) => {
+        let turfBbox = turf.bbox(featureCollection)
+        let boxRatio = (turfBbox[2] - turfBbox[0]) / (turfBbox[3] - turfBbox[1])
+        let bounds   = [[turfBbox[3], turfBbox[0]], [turfBbox[1], turfBbox[2]]]
+
+        return {
+            bounds: bounds,
+            ratio: boxRatio
+        }
+    }
+
+    const getZoomLevel = (bounds) => {
+        let zoomlvl = mapRef.current.getBoundsZoom(bounds)
+        return zoomlvl
+    }
     
-    const handleClick = () => {        
+    const handleClick = () => {
 
         const allFeatNodes = [];
 
         mapRef.current.eachLayer(layer => {
-            layer.feature ? 
-                allFeatNodes.push(turf.cleanCoords(layer.feature, {mutate: true})) : null
+            
+            if (layer.feature) {
+                let newProps = {
+                    color: layer.options.color,
+                    fillColor: layer.options.fillColor,
+                    fillOpacity: layer.options.fillOpacity,
+                    opacity: layer.options.opacity,
+                    weight: layer.options.weight,
+                    name: layer.feature.properties.Name
+                }
+                
+                let node = cleanLayerCoords(layer)
+                node.properties = newProps
+                allFeatNodes.push(node)
+            }
+                
         })
 
-        const featureCollection = turf.featureCollection(allFeatNodes)
+        const featureCollection = getFeatureCollection(allFeatNodes)
 
-        let map         = mapRef.current
-        let turfBbox    = turf.bbox(featureCollection)
-        let boxRatio    = (turfBbox[2] - turfBbox[0]) / (turfBbox[3] - turfBbox[1])
-        let zoomlvl     = mapRef.current.getBoundsZoom([[turfBbox[1] + 1, turfBbox[0]] + 1, [turfBbox[3] + 1, turfBbox[2] + 1]])
-        let centroid    = turf.center(featureCollection).geometry.coordinates.reverse()
+        let turfBbox = getBbox(featureCollection)
+        let zoomLvl  = getZoomLevel(turfBbox.bounds)
+        let centroid = turf.center(featureCollection).geometry.coordinates.reverse()
 
-        map.setView(centroid,zoomlvl,{animate: false})
-        map.setMaxBounds(turfBbox, {animate: false})
+        mapRef.current.setView(centroid,zoomLvl,{animate: false})
+        mapRef.current.setMaxBounds(turfBbox.bounds, {animate: false})
 
-        let pxBounds    = map.getPixelBounds()
+        let pxBounds    = mapRef.current.getPixelBounds()
         let pxWdth      = pxBounds.max.x - pxBounds.min.x
-        let pxHght      = pxBounds.max.y - pxBounds.min.y
-        let scaledWdth  = pxWidth * zoomlvl
-        let scaledHght  = scaledWdth / boxRatio
-        
+        let scaledWdth  = pxWdth * zoomLvl
+        let scaledHght  = scaledWdth / turfBbox.ratio
+
         let dataArgs = {
-            width: scaledWdth,
-            height: scaledHght,
-            bBox: turfBbox,
+            width:      scaledWdth,
+            height:     scaledHght,
+            bBox:       turfBbox.bounds,
             collection: featureCollection
         }
 
         let pathData    = convertToSvg(dataArgs)
         let textNodes   = getTextNodes(dataArgs)
+        let lgndNode    = getLegendNode(scaledWdth, scaledHght - 50, 50)
+        let lgndHght    = 50
 
-        let minX        = pathData.bbox[0]
-        let minY        = pathData.bbox[1]
-        let width       = pathData.width
-        let height      = pathData.height
+        let svgMinX     = pathData.bbox[0]
+        let svgMinY     = pathData.bbox[1]
+        let svgWidth    = pathData.width
+        let svgHeight   = pathData.height
 
         let mainSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-            mainSvg.setAttribute('width', width)
-            mainSvg.setAttribute('height', height)
-            mainSvg.setAttribute('viewBox', minX + ' ' + minY + ' ' + width + ' ' + height)
-            mainSvg.innerHTML = pathData.paths + textNodes.join('')
+            mainSvg.setAttribute('width', svgWidth)
+            mainSvg.setAttribute('height', svgHeight + (lgndHght * 2))
+            mainSvg.setAttribute('viewBox', svgMinX + ' ' + svgMinY + ' ' + svgWidth + ' ' + svgHeight)
+            mainSvg.innerHTML = pathData.paths + textNodes.join('') + lgndNode
 
         let dwnload = document.createElement('a')
             dwnload.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(mainSvg.outerHTML))
             dwnload.setAttribute('download', 'map.svg')
             dwnload.click()
-
-        console.log("done")
 
     }
 

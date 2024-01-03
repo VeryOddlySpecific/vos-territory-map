@@ -297,6 +297,40 @@ const PrintButton = () => {
         let zoomlvl = mapRef.current.getBoundsZoom(bounds)
         return zoomlvl
     }
+
+    const convertToPng = (svg, width, height) => {
+
+        let image = new Image()
+        
+        
+
+        let svgData = new XMLSerializer().serializeToString(svg)
+        let svgB64  = btoa(svgData)
+        let imgSrc  = 'data:image/svg+xml;base64,' + svgB64
+
+        image.onload = () => {
+
+            let canvas = document.createElement('canvas')
+                canvas.setAttribute('width', width)
+                canvas.setAttribute('height', height)
+
+            let context = canvas.getContext('2d')
+                context.drawImage(image, 0, 0, width, height)
+            
+            let dataUrl = canvas.toDataURL('image/png')
+
+            let dwnload = document.createElement('a')
+                dwnload.setAttribute('href', dataUrl)
+                dwnload.setAttribute('download', 'map.png')
+                dwnload.click()
+
+        }
+
+        image.src = imgSrc
+
+        //return image
+
+    }
     
     const handleClick = () => {
 
@@ -358,10 +392,7 @@ const PrintButton = () => {
             mainSvg.setAttribute('viewBox', svgMinX + ' ' + svgMinY + ' ' + svgWidth + ' ' + svgHeight)
             mainSvg.innerHTML = pathData.paths + textNodes.join('') + lgndNode
 
-        let dwnload = document.createElement('a')
-            dwnload.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(mainSvg.outerHTML))
-            dwnload.setAttribute('download', 'map.svg')
-            dwnload.click()
+        convertToPng(mainSvg, svgWidth, svgHeight + (lgndHght * 2))
 
     }
 

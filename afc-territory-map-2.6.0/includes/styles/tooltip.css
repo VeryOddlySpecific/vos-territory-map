@@ -1,0 +1,13 @@
+.leaflet-tooltip {
+    font-size: .7rem;
+    background-color: #0a194425;
+    /*border: none;
+    border-radius: 0;
+    box-shadow: none;*/
+}
+.leaflet-tooltip.small-tooltip {
+    font-size: .6rem;
+}
+.leaflet-tooltip.standard-tooltip {
+    font-size: 1rem;
+}

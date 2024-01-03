@@ -10,6 +10,8 @@ import { MapContext } from './MapContext';
 
 //import branchesAlt from '../assets/branchesAlt.json';
 
+import allCities from '../assets/citydata.json';
+
 const TerritoryMap = () => {
 
     const { mapRef } = useContext(MapContext);

@@ -44,6 +44,7 @@ const MapProcessor = () => {
     const [ subregion, setSubregion ] = useState(null);
     const [ isClicked, setIsClicked ] = useState(false);
     const [ init, setInit ] = useState(true);
+    
 
     const handleRegionData = async (apiRoute, rFips) => {
         try {
@@ -162,11 +163,9 @@ const MapProcessor = () => {
             });
         }
     }
+    
 
-    const collectRegionsInServiceAreas = () => {
-
-        
-    }
+    
 
     useEffect(() => {
         L.tileLayer('https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=GXUO6RDrkZ9BfFwKsVIr', {
@@ -174,8 +173,7 @@ const MapProcessor = () => {
             maxZoom: 19,
         }).addTo(mapRef.current);
         initData();
-
-        collectRegionsInServiceAreas();
+        
     }, []);
 
     useEffect(() => {
@@ -234,6 +232,7 @@ const MapProcessor = () => {
     }, [toggledRegion])
 
     useEffect(() => {
+        
         if (legendKeyClicked && activeSubregions.length) {
             const branchSubregions = [];
             activeSubregions.forEach(subregion => {
@@ -278,6 +277,8 @@ const MapProcessor = () => {
         }
 
     }, [activeSelection, legendKeyClicked])
+
+    
 }
 
 export default MapProcessor;

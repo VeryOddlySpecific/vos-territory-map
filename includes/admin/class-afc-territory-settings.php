@@ -86,6 +86,8 @@ class AFCT_Settings {
 
     }
 
+    
+
     public function register_rest_routes() {
 
         register_rest_route(
@@ -106,6 +108,26 @@ class AFCT_Settings {
             )
         );
 
+        register_rest_route(
+            'afct/v1',
+            '/save-branch-cities',
+            array(
+                'methods' => 'POST',
+                'callback' => array( $this, 'save_branch_cities' ),
+            )
+            );
+
+    }
+
+    public function save_branch_cities() {
+
+        $payload = $request->get_json_params();
+        $branch_cities = $payload['branch_cities'];
+
+        update_option( '_afct_branch_cities', $branch_cities );
+
+        return rest_ensure_response( array( 'success' => true ) );
+        
     }
 
     public function save_map_settings( $request ) {

@@ -13,6 +13,7 @@ import {
 import { MapContext } from './MapContext';
 import SaveButton from './SaveButton';
 import PrintButton from './PrintButton';
+import GetCities from './GetCities';
 
 import { 
     useContext,
@@ -203,6 +204,7 @@ const SubregionData = () => {
                     >Clear Selection</Button>
                     <SaveButton />
                     <PrintButton />
+                    <GetCities />
                 </ButtonGroup>
 
                 <CardDivider 

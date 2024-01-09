@@ -2,6 +2,7 @@ import TerritoryMap from './TerritoryMap';
 import RegionSelector from './RegionSelector';
 import SubregionData from './SubregionData';
 import MapProcessor from './MapProcessor';
+import BranchProcessor from './BranchProcessor';
 import LayerStyles from '../components_alt/LayerStyles';
 import MapLegend from './MapLegend';
 
@@ -15,7 +16,8 @@ const Layout = () => {
                 <SubregionData />
                 <TerritoryMap />
             </div>
-            <MapProcessor />            
+            <MapProcessor />    
+            <BranchProcessor />        
         </>
     );
 

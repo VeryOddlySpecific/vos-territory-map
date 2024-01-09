@@ -1,6 +1,10 @@
 {
     "1": {
         "label": "La Vista, Nebraska",
+        "coordinates": [
+            -96.0324044,
+            41.1832679
+        ],
         "style": {
             "color": "#2f4f4f",
             "weight": 2,
@@ -18,6 +22,10 @@
     },
     "2": {
         "label": "Omaha, Nebraska",
+        "coordinates": [
+            -95.9383758,
+            41.2587459
+        ],
         "style": {
             "color": "#8b4513",
             "weight": 2,
@@ -35,6 +43,10 @@
     },
     "3": {
         "label": "Lincoln, Nebraska",
+        "coordinates": [
+            -96.7077751,
+            40.8088861
+        ],
         "style": {
             "color": "#006400",
             "weight": 2,
@@ -52,6 +64,10 @@
     },
     "4": {
         "label": "Kearney, Nebraska",
+        "coordinates": [
+            -99.081858,
+            40.699478
+        ],
         "style": {
             "color": "#4b0082",
             "weight": 2,
@@ -69,6 +85,10 @@
     },
     "5": {
         "label": "Grand Island, Nebraska",
+        "coordinates": [
+            -98.338685,
+            40.924271
+        ],
         "style": {
             "color": "#ff0000",
             "weight": 2,
@@ -86,6 +106,10 @@
     },
     "6": {
         "label": "Cedar Rapids, Iowa",
+        "coordinates": [
+            -91.6704053,
+            41.9758872
+        ],
         "style": {
             "color": "#00ced1",
             "weight": 2,
@@ -103,6 +127,10 @@
     },
     "7": {
         "label": "Des Moines, Iowa",
+        "coordinates": [
+            -93.6046655,
+            41.5910323
+        ],
         "style": {
             "color": "#ffa500",
             "weight": 2,
@@ -120,6 +148,10 @@
     },
     "8": {
         "label": "Sioux City, Iowa",
+        "coordinates": [
+            -96.4058782,
+            42.4966815
+        ],
         "style": {
             "color": "#00ff00",
             "weight": 2,
@@ -137,6 +169,10 @@
     },
     "9": {
         "label": "Sioux Falls, South Dakota",
+        "coordinates": [
+            -96.7307737,
+            43.5488256
+        ],
         "style": {
             "color": "#0000ff",
             "weight": 2,
@@ -154,6 +190,10 @@
     },
     "10": {
         "label": "Rochester, Minnesota",
+        "coordinates": [
+            -92.4630182,
+            44.0234387
+        ],
         "style": {
             "color": "#d8bfd8",
             "weight": 2,
@@ -171,6 +211,10 @@
     },
     "11": {
         "label": "Madison, Wisconsin",
+        "coordinates": [
+            -89.3837613,
+            43.074761
+        ],
         "style": {
             "color": "#ff00ff",
             "weight": 2,
@@ -188,6 +232,10 @@
     },
     "12": {
         "label": "Kansas City, Missouri",
+        "coordinates": [
+            -94.5781416,
+            39.100105
+        ],
         "style": {
             "color": "#1e90ff",
             "weight": 2,
@@ -205,6 +253,10 @@
     },
     "13": {
         "label": "Fargo, North Dakota",
+        "coordinates": [
+            -96.789821,
+            46.877229
+        ],
         "style": {
             "color": "#98fb98",
             "weight": 2,
@@ -222,6 +274,10 @@
     },
     "14": {
         "label": "Rapid City, South Dakota",
+        "coordinates": [
+            -103.2280239,
+            44.0806041
+        ],
         "style": {
             "color": "#ff69b4",
             "weight": 2,

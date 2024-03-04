@@ -128,15 +128,26 @@ const SaveButton = () => {
             const data = {
                 _afct_id: subregion.options._afct_id,
                 branch: subregion.branch,
-                geoid: subregion.feature.properties.GEOID
+                geoid: subregion.feature.properties.GEOID,
+                restrictions: subregion.options.restrictions,
+                restrictionDetails: subregion.options.restrictionDetails,
             }
-
+            console.log("subregion data", data);
             subregions.push(data);
         });
 
         saveData(JSON.stringify(activeRegions), '_afct_active_regions');
         saveData(JSON.stringify(subregions), '_afct_active_subregions');
         saveData(JSON.stringify(branchCities), '_afct_branch_cities');
+        // testing to see how data gets saved, if I save the whole map....
+        // create LayerGroup to contain all current layers on mapRef
+        // var layerGroup = L.layerGroup();
+        // mapRef.current.eachLayer(function(layer) {
+        //     layerGroup.addLayer(layer);
+        // });
+        // prep layerGroup for saving
+        // var savableLayerGroup = layerGroup.toGeoJSON();
+        // saveData(layerGroup, '_afct_map_layers');
     };
 
     useEffect(() => {

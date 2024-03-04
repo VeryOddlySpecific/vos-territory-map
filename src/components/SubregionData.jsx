@@ -5,6 +5,7 @@ import {
     CardDivider,
     ToggleControl,
     SelectControl,
+    TextControl,
     Button,
     ButtonGroup,
     __experimentalHeading as Heading,
@@ -13,7 +14,7 @@ import {
 import { MapContext } from './MapContext';
 import SaveButton from './SaveButton';
 import PrintButton from './PrintButton';
-import GetCities from './GetCities';
+//import GetCities from './GetCities';
 
 import { 
     useContext,
@@ -51,6 +52,8 @@ const SubregionData = () => {
     } = useContext(MapContext);
 
     const [active, setActive] = useState(false);
+    const [hasRestrictions, setHasRestrictions] = useState(false);
+    const [restrictionDetails, setRestrictionDetails] = useState(null);
     const [branchSelected, setBranchSelected] = useState(false);
     const [branchSelection, setBranchSelection] = useState(null);
     const [branchOptions,] = useState(getBranchOptions());
@@ -108,6 +111,48 @@ const SubregionData = () => {
         setActive(!active);
     }
 
+    const handleRestrictionToggle = () => {
+        setHasRestrictions(!hasRestrictions);
+    }
+
+    const updateRestrictionDetails = (val) => {
+        // for all in activeSelection, set restrictions to true and add val to restrictionsDetails
+        activeSelection.forEach(subregion => {
+            subregion.options.restrictions = true;
+            subregion.options.restrictionDetails = val;
+        });
+    }
+
+    useEffect(() => {
+
+        if (hasRestrictions && activeSelection.length) {
+            console.log("adding 'restrictions' to the current activeSelection")
+
+            activeSelection.forEach(subregion => {
+                subregion.setStyle({
+                    color: '#f00'
+                })
+                console.log("Adding restrictions = true to subregion options")
+                subregion.options.restrictions = true;
+            })
+            // set the style of the activeSelection to the 'restrictions' style
+            // restrictions style should be a diagonal hash pattern with a red color
+            // create an svg pattern with diagonal lines
+            // var gradientColor = '#f00';
+            // activeSelection.forEach(subregion => {
+            //     console.log("subregion: ", subregion)
+            //     let currentFillColor = subregion.options.fill;
+            //     let oldStyle = subregion.options.style;
+            //     let gradientCSS = 'liner-gradient(45deg, ' + gradientColor + ' 25%, ' + currentFillColor + ' 25%)';
+            //     subregion.setStyle({
+            //         fillColor: gradientCSS
+            //     })
+            //     console.log("subregion style updated from: ", oldStyle, "to: ", subregion.options.style)
+            // });
+
+        }
+    }, [hasRestrictions])
+
     useEffect(() => {
         if (branchSelection && branchSelected) {
             const styleToSet = branchesAlt[branchSelection].style;
@@ -141,6 +186,15 @@ const SubregionData = () => {
                 if (selectedHaveSameBranch) {
                     setActive(true);
                     setBranchSelection(activeSelection[0].branch);
+
+                    // if any of activeSelection have restrictions, set hasRestrictions to true, and set restrictionDetails to the first subregion's restrictionDetails
+                    const selectedHaveRestrictions = activeSelection.every(subregion => subregion.options.restrictions);
+                    if (selectedHaveRestrictions) {
+                        setHasRestrictions(true);
+                        setRestrictionDetails(activeSelection[0].options.restrictionDetails);
+                        console.log("activeSelection has restrictions: ", activeSelection[0].options.restrictionDetails)
+                        console.log("activeSelection: ", activeSelection)
+                    }
                 } else {
                     setActive(false);
                     setBranchSelection(null);
@@ -176,20 +230,48 @@ const SubregionData = () => {
         
     }, [activeSelection])
 
+    /**
+     * UseEffect to process selection on activeChange, when active become false
+     */
+    useEffect(() => {
+
+        // if active has become false, remove counties in activeSelection from activeSubregions
+        // also remove any styles that were added to the counties
+        if ( !active ) {
+            let deactiveatedSubregions = activeSubregions.filter(subregion => {
+                return activeSelection.includes(subregion);
+            });
+            let updatedActiveSubregions = activeSubregions.filter(subregion => {
+                return !activeSelection.includes(subregion);
+            });
+
+            // remove styles from deactiveatedSubregions
+            deactiveatedSubregions.forEach(subregion => {
+                subregion.setStyle({
+                    color: '#0a1944',
+                    weight: 1,
+                    opacity: .25,
+                    fillColor: '#fff',
+                    fillOpacity: 0.25,
+                });
+            });
+
+            // set activeSubregions to updatedActiveSubregions
+            setActiveSubregions(updatedActiveSubregions);
+
+            // clear activeSelection
+            setActiveSelection([]);
+        }
+
+    }, [active])
+
     return (
 
         <Card>
-
             <CardHeader>
-
                 <Heading level={3}>Subregion Data</Heading>
-                
-
             </CardHeader>
-
             <CardBody>
-
-
                 <ButtonGroup
                     style={{
                         display: 'grid',
@@ -197,22 +279,18 @@ const SubregionData = () => {
                         gridGap: '2rem',
                     }}
                 >
-
                     <Button
                         isSecondary
                         onClick={handleClearSelection}
                     >Clear Selection</Button>
                     <SaveButton />
                     <PrintButton />
-                    <GetCities />
                 </ButtonGroup>
-
                 <CardDivider 
                     style={{
                         margin: '1rem 0'
                     }}
                 />
-
                 <ToggleControl
                     label="Activate counties"
                     checked={ active }
@@ -255,7 +333,18 @@ const SubregionData = () => {
                     
                 }
                 </ul>
-
+                <CardDivider />
+                <Heading level={4}>County Restrictions:</Heading>
+                <ToggleControl 
+                    label="Has restrictions"
+                    checked={hasRestrictions}
+                    onChange={handleRestrictionToggle}
+                />
+                <TextControl
+                    label="Restriction details"
+                    onChange={updateRestrictionDetails}
+                    value={restrictionDetails}
+                />
                 
 
             </CardBody>

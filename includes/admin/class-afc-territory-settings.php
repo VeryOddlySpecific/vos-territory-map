@@ -115,8 +115,41 @@ class AFCT_Settings {
                 'methods' => 'POST',
                 'callback' => array( $this, 'save_branch_cities' ),
             )
-            );
+        );
 
+        register_rest_route(
+            'afct/v1',
+            '/get-branch-cities',
+            array(
+                'methods' => 'GET',
+                'callback' => array( $this, 'get_branch_cities' ),
+            )
+        );
+
+        register_rest_route(
+            'afct/v1',
+            '/get-service-cities',
+            array(
+                'methods' => 'GET',
+                'callback' => array( $this, 'get_service_cities' ),
+            )
+        );
+
+        register_rest_route(
+            'afct/v1',
+            '/get-cities',
+            array(
+                'methods' => 'GET',
+                'callback' => array( $this, 'get_cities' )
+            )
+        );
+
+    }
+
+    public function get_cities() {
+        $city_data = file_get_contents( AFCT_PATH . 'includes/assets/citydata.json' );
+
+        return rest_ensure_response( $city_data );
     }
 
     public function save_branch_cities() {
@@ -130,8 +163,37 @@ class AFCT_Settings {
         
     }
 
+    public function get_branch_cities( $request ) {
+
+        $payload            = $request->get_params();
+        $site_url           = $payload['site_url'];
+
+        $all_branch_cities  = json_decode( get_option( '_afct_branch_cities' ), true );
+        $branch_id          = $this->get_branch_id( $site_url );
+        $branch_cities_key  = array_search( $branch_id, array_column( $all_branch_cities, 'branch' ) );
+        $branch_cities      = $all_branch_cities[$branch_cities_key]['cities'];
+
+        return rest_ensure_response( $branch_cities );
+
+    }
+
+    public function get_service_cities( $request ) {
+        
+    }
+    
+    public function get_branch_id( $site_url ) {
+
+        $branches   = json_decode( file_get_contents( AFCT_PATH . 'includes/assets/branches.json' ) );
+
+        $branch     = array_search( $site_url, array_column( $branches, 'url' ) );
+        $branch_id  = $branches[$branch]->value;
+
+        return $branch_id;
+    }
+
     public function save_map_settings( $request ) {
 
+        
         $payload    = $request->get_json_params();
         $key        = $payload['id'];
         $data       = $payload['data'];

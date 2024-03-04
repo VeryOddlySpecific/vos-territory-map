@@ -78,13 +78,27 @@ const MapProcessor = () => {
             const subregionsLayer = L.geoJson(data, {
                 onEachFeature: (feature, layer) => {
                     const featureIsActive = importedSubregions.some(subregion => Number(subregion.geoid) === Number(feature.properties.GEOID));
+                    // console.log("imported subregions:", importedSubregions);
                     if (featureIsActive) {
+                        // console.log("active Feature:", feature)
+                        // if the feature is active, does the feature have restrictions?
+                        // this should check saved/imported subregion data to see if it has a property for restrictions
+                        const featureHasRestrictions = importedSubregions.find(subregion => Number(subregion.geoid) === Number(feature.properties.GEOID)).restrictions;
+                        console.log("does this feature have restrictions?", featureHasRestrictions)
                         const fGeoid = feature.properties.GEOID;
                         const fBranch = importedSubregions.find(subregion => Number(subregion.geoid) === Number(fGeoid)).branch;
                         const fStyle = branchesAlt[fBranch].style;
 
                         layer.setStyle(fStyle);
                         layer.branch = fBranch;
+                        // if feature has restrictions, add red border style
+                        if (featureHasRestrictions) {
+                            layer.options.restrictions = featureHasRestrictions;
+                            layer.options.restrictionDetails = importedSubregions.find(subregion => Number(subregion.geoid) === Number(fGeoid)).restrictionDetails;
+                            layer.setStyle({
+                                color: '#f00'
+                            })
+                        }
                         setActiveSubregions((prevActiveSubregions) => [...prevActiveSubregions, layer]);
                     } else {
                         layer.setStyle({
@@ -164,6 +178,20 @@ const MapProcessor = () => {
         }
     }
     
+    const altMapSetup = () => {
+        if (admin.mapLayers) {
+            // parse admin.mapLayers to be json featureCollection
+            const mapLayersData = JSON.parse(admin.mapLayers);
+            mapLayersData.features.forEach(feature => {
+                if (feature.properties.Name === 'Otoe') {
+                    console.log("feature:", feature)
+                }
+                const layer = L.geoJson(feature);
+                layer.addTo(mapRef.current);
+                // setMapLayers((prevMapLayers) => [...prevMapLayers, layer]);
+            });
+        }
+    }
 
     
 
@@ -172,7 +200,9 @@ const MapProcessor = () => {
             attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
             maxZoom: 19,
         }).addTo(mapRef.current);
+        console.log("current admin data object", admin);
         initData();
+        // altMapSetup();
         
     }, []);
 

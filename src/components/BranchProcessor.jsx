@@ -70,12 +70,7 @@ const BranchProcessor = () => {
 
     return (
         <>
-            <Button
-                variant="primary"
-                onClick={handleClick}
-                >
-                Test
-                </Button>
+            
         </>
     )
 

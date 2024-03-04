@@ -53,6 +53,7 @@ class AFCT_Admin_Display {
                         'subregions' => get_option( '_afct_active_subregions' ),
                         'apiBase' => rest_url( 'afct/v1' ),
                         'mapData' => get_option( '_afct_map_data' ),
+                        'mapLayers' => get_option( '_afct_map_layers' ),
                     );
 
                     wp_localize_script( $handle, 'admin', $obj );

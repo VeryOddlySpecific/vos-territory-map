@@ -197,6 +197,70 @@ class AFCT_Settings {
         $payload    = $request->get_json_params();
         $key        = $payload['id'];
         $data       = $payload['data'];
+        $new_data   = array();
+        
+
+        if ( $key === '_afct_active_subregions' ) {
+            $decoded_data = json_decode( $data, true );
+            // for each subregion in $data
+            //      get subregion name and state
+            //      get zip codes from assets/zip_code_database.json
+            //      where zip_code->state === state && zip_code->county === subregion_name + ' County'
+            //      set subregion->zip_codes = zip_codes
+
+            // update_option( $key, $data );
+            // return rest_ensure_response( array( 'success' => true, 'key' => $key ) );
+            $count = 0;
+            foreach ( $decoded_data as $subregion ) {
+                // subregion is an array:
+                // [
+                //      '_afct_id' => 'subregions-31',
+                //      'branch' => '3',
+                //      'geoid' => '31001',
+                // ]
+                $count++;
+                $fips_data  = json_decode( file_get_contents( AFCT_PATH . 'includes/assets/fips.json' ), true );
+                $counties   = json_decode( file_get_contents( AFCT_PATH . 'includes/assets/states/' . $state_id . '.geojson' ), true);
+                $zip_codes  = json_decode( file_get_contents( AFCT_PATH . 'includes/assets/zip_code_database.json' ), true );
+                
+                $geoid      = $subregion['geoid'];
+                $state_id   = substr( $geoid, 0, 2 );
+                $county_id  = substr( $geoid, 2, 3 );
+
+                update_option( 'subregion_stage', 'split the geoid' );
+                
+
+                $features   = $counties['features'];
+                update_option( 'subregion_stage', $features );
+                continue;
+                $selection  = array_filter( $features, function( $feature ) use ( $geoid ) {
+                    return $feature['properties']['GEOID'] === $geoid;
+                } );
+                update_option( 'subregion_stage', array('selected the feature', $selection) );
+                
+                
+                $state_abbr = array_filter( $fips_data, function( $fips ) use ( $state_id ) {
+                    return $fips['fips'] === $state_id;
+                } );
+                $feat_name  = $selection[0]['properties']['Name'] . ' County';
+
+                $new_zips   = array_filter( $zip_codes, function( $code_obj ) use ( $state_abbr, $feat_name ) {
+                    return $code_obj['state'] === $state_abbr && $code_obj['county'] === $feat_name;
+                } );
+                $raw_codes  = array_map( function( $code_obj ) {
+                    return $code_obj['zip'];
+                }, $new_zips );
+
+                $subregion['zip_codes'] = $raw_codes;
+
+                update_option( 'subregion_' . $count, $subregion );
+            }
+
+            update_option( $key, $data );
+            $type_of_data = gettype( $data );
+            update_option( $key . '_type', $type_of_data );
+            return rest_ensure_response( array( 'success' => true, 'key' => $key ) );
+        }
 
         update_option( $key, $data );
 

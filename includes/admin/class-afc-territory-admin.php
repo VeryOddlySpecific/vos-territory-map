@@ -4,6 +4,7 @@ class AFCT_Admin {
 
     protected $display;
     protected $settings;
+    protected $helpers;
 
     public function __construct() {
 
@@ -14,6 +15,7 @@ class AFCT_Admin {
 
     private function load_dependencies() {
 
+        require_once AFCT_PATH . 'includes/admin/class-afc-territory-admin-helpers.php';
         require_once AFCT_PATH . 'includes/admin/class-afc-territory-admin-display.php';
         require_once AFCT_PATH . 'includes/admin/class-afc-territory-settings.php';
 
@@ -23,6 +25,7 @@ class AFCT_Admin {
 
         $this->display = new AFCT_Admin_Display();
         $this->settings = new AFCT_Settings();
+        $this->helpers = new AFCT_Admin_Helpers();
 
     }
 

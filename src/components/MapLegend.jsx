@@ -16,12 +16,24 @@ import {
     Button,
 } from '@wordpress/components';
 
+/**
+ * shows the map legend, with buttons to toggle the visibility of the branches
+ * the buttons have the names of the branches, and the color of the branch
+ * 
+ * @returns {JSX.Element}
+ */
 const MapLegend = () => {
 
     const {
         setLegendKeyClicked,
     } = useContext(MapContext);
 
+    /**
+     * When a branch button is clicked, set the legendKeyClicked in the MapContext
+     * legendKeyClicked is processed in MapProcessor.jsx
+     * 
+     * @param {number} key - the key of the branch that was clicked 
+     */
     const handleClick = (key) => {
         setLegendKeyClicked(key);
     }

@@ -2,6 +2,12 @@ import { MapProvider } from './MapContext';
 import Layout from './Layout';
 import { PublicLayout } from './Layout';
 
+/**
+ * returns the admin side map, wrapped in the MapProvider
+ * MapProvider is used to provide the map context to the components
+ * 
+ * @returns {JSX.Element}
+ */
 function App() {
   return (
     <MapProvider>
@@ -10,6 +16,12 @@ function App() {
   );
 }
 
+/**
+ * returns the public side map, wrapped in the MapProvider
+ * MapProvider is used to provide the map context to the components
+ * 
+ * @returns {JSX.Element}
+ */
 function PublicApp() {
   return (
     <MapProvider>

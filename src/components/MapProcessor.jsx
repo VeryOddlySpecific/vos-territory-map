@@ -13,7 +13,7 @@ const MapProcessor = () => {
     const importedSubregions = [];
     const importedRegions = [];
 
-    if (admin.subregions) {
+    if (admin.subregions && admin.subregions.length > 0) {
         const adminSubregionsData = JSON.parse(admin.subregions);
         adminSubregionsData.forEach(subregion => {
             importedSubregions.push(subregion);
@@ -74,7 +74,7 @@ const MapProcessor = () => {
             regionShapeLayer.addTo(mapRef.current);
 
             setActiveRegions((prevActiveRegions) => [...prevActiveRegions, rFips]);
-
+            console.log("geojson data:", data);
             const subregionsLayer = L.geoJson(data, {
                 onEachFeature: (feature, layer) => {
                     const featureIsActive = importedSubregions.some(subregion => Number(subregion.geoid) === Number(feature.properties.GEOID));
@@ -245,6 +245,15 @@ const MapProcessor = () => {
         }
     }, [subregion, isClicked]);
 
+    /**
+     * useEffect runs on a change in toggledRegion
+     * toggledRegion will contain the region code and a boolean value of its active state
+     * if the region is active, it will call handleRegionData with the apiRoute and region code
+     * if the region is not active, it will:
+     *      remove the region shape layer from the map
+     *      remove the subregions layers from the map
+     *      remove the region code from the activeRegions array
+     */
     useEffect(() => {
         if (toggledRegion) {
             if (toggledRegion.active) {
@@ -261,6 +270,15 @@ const MapProcessor = () => {
         }
     }, [toggledRegion])
 
+    /**
+     * runs on a change in activeSubregions or legendKeyClicked
+     * checks if a legend key was clicked and if there are active subregions
+     * if there are active subregions, it will:
+     *     loop through the active subregions
+     *     if the subregion has a branch and the branch matches the legend key clicked, set the subregion style to the active style
+     *     if the subregion has a branch and the branch does not match the legend key clicked, set the subregion style to the default style
+     *     if the subregion has no branch, set the subregion style to the default style
+     */
     useEffect(() => {
         
         if (legendKeyClicked && activeSubregions.length) {

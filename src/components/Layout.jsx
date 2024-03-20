@@ -6,6 +6,11 @@ import BranchProcessor from './BranchProcessor';
 import LayerStyles from '../components_alt/LayerStyles';
 import MapLegend from './MapLegend';
 
+/**
+ * set up and returns the admin side map layout
+ * 
+ * @returns {JSX.Element}
+ */
 const Layout = () => {
 
     return (
@@ -23,6 +28,11 @@ const Layout = () => {
 
 };
 
+/**
+ * sets up and returns the public side map layout
+ * 
+ * @returns {JSX.Element}
+ */
 const PublicLayout = () => {
 
     return (
